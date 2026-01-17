@@ -1,0 +1,398 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "type": "group",
+      "x": -800,
+      "y": -600,
+      "width": 1600,
+      "height": 1200,
+      "label": "Benning Device Manager"
+    },
+    {
+      "id": "main_menu",
+      "type": "text",
+      "x": -750,
+      "y": -550,
+      "width": 200,
+      "height": 100,
+      "text": "# Hauptmenü\n\n1. Neues Gerät\n2. Geräteliste\n3. Geräte-Details\n4. Inspektionsergebnis\n5. Statistiken\n6. CSV-Export\n7. Beenden"
+    },
+    {
+      "id": "add_device",
+      "type": "text",
+      "x": -450,
+      "y": -550,
+      "width": 200,
+      "height": 150,
+      "text": "# Neues Gerät\n\nEingabe:\n- Geräte-ID*\n- Name*\n- Hersteller\n- Modell\n- Seriennummer\n- Typ (5 Optionen)\n- Standort\n- Besitzer\n- Letzte Prüfung\n- Notizen"
+    },
+    {
+      "id": "list_devices",
+      "type": "text",
+      "x": -150,
+      "y": -550,
+      "width": 180,
+      "height": 120,
+      "text": "# Geräteliste\n\nAnzeige:\n- Geräte-ID\n- Name\n- Hersteller\n- Standort\n- Status\n- Nächste Prüfung\n\n⚠️ Rot = Überfällig"
+    },
+    {
+      "id": "view_details",
+      "type": "text",
+      "x": 150,
+      "y": -550,
+      "width": 200,
+      "height": 120,
+      "text": "# Geräte-Details\n\nAnzeige:\n- Alle Basisdaten\n- Inspektionshistorie\n- Letzte 5 Inspekt.\n- Status & Notizen"
+    },
+    {
+      "id": "add_inspection",
+      "type": "text",
+      "x": -450,
+      "y": -350,
+      "width": 200,
+      "height": 150,
+      "text": "# Inspektionsergebnis\n\nEingabe:\n- Geräte-ID*\n- Prüfdatum*\n- Prüfer*\n- Testergebnis*\n  (1. Bestanden\n   2. Nicht best.\n   3. Vorbehalte)\n- Messwerte\n- Notizen"
+    },
+    {
+      "id": "messwerte",
+      "type": "text",
+      "x": -150,
+      "y": -350,
+      "width": 150,
+      "height": 150,
+      "text": "# Messwerte\n\nOptionale Felder:\n- Isolationswiderstand\n  (MOhm)\n- Schutzleiter-Widerstand\n  (Ohm)\n- Ableitstrom\n  (mA)"
+    },
+    {
+      "id": "statistics",
+      "type": "text",
+      "x": 150,
+      "y": -350,
+      "width": 200,
+      "height": 150,
+      "text": "# Statistiken\n\nAusgabe:\n- Geräte insgesamt\n- Aktive Geräte\n- Überfällige\n- Inspekt. (30d)\n- Inspekt. (diesen Monat)\n- Geräte nach Typ"
+    },
+    {
+      "id": "csv_export",
+      "type": "text",
+      "x": -450,
+      "y": -150,
+      "width": 200,
+      "height": 120,
+      "text": "# CSV-Export\n\nExportiert:\n- Alle Gerätedaten\n- Format: CSV (;)\n- Dateiname: Auto\n- Encoding: UTF-8\n- Für Excel"
+    },
+    {
+      "id": "database",
+      "type": "text",
+      "x": -150,
+      "y": -150,
+      "width": 180,
+      "height": 120,
+      "text": "# SQLite Datenbank\n\nTabellen:\n📊 devices\n📋 inspections\n📈 measurements\n\nAutomatische Erstellung"
+    },
+    {
+      "id": "ui_system",
+      "type": "text",
+      "x": 150,
+      "y": -150,
+      "width": 200,
+      "height": 120,
+      "text": "# Terminal UI\n\n✨ Features:\n- Farbige Ausgabe\n- Eingabemasken\n- Validierung\n- Duplikat-Check\n- Fehlerbehandlung"
+    },
+    {
+      "id": "device_table",
+      "type": "text",
+      "x": -800,
+      "y": 0,
+      "width": 300,
+      "height": 180,
+      "text": "# devices Tabelle\n\n- id (PK)\n- device_id* (unique)\n- name*\n- manufacturer\n- model\n- serial_number\n- type\n- location\n- owner\n- added_date\n- last_inspection_date\n- next_inspection_date\n- status\n- notes"
+    },
+    {
+      "id": "inspection_table",
+      "type": "text",
+      "x": -450,
+      "y": 0,
+      "width": 280,
+      "height": 180,
+      "text": "# inspections Tabelle\n\n- id (PK)\n- device_id* (FK)\n- inspection_date\n- inspector\n- test_result\n- isolation_resistance\n- protective_conductor_\n  resistance\n- leakage_current\n- notes"
+    },
+    {
+      "id": "measurement_table",
+      "type": "text",
+      "x": -50,
+      "y": 0,
+      "width": 250,
+      "height": 180,
+      "text": "# measurements Tabelle\n\n- id (PK)\n- inspection_id* (FK)\n- test_type\n- test_value\n- unit\n- status"
+    },
+    {
+      "id": "validation",
+      "type": "text",
+      "x": 300,
+      "y": 0,
+      "width": 200,
+      "height": 180,
+      "text": "# Validierung\n\n✓ Geräte-ID Duplikat\n✓ Erforderliche Felder\n✓ Datumsformat\n  (YYYY-MM-DD)\n✓ Zahlen-Felder\n✓ Enum-Werte\n✓ Längen-Limits"
+    },
+    {
+      "id": "workflow_daily",
+      "type": "text",
+      "x": -800,
+      "y": 250,
+      "width": 200,
+      "height": 100,
+      "text": "# Täglich\n\n□ Inspektionsergebnisse\n  dokumentieren\n□ Neue Geräte\n  registrieren"
+    },
+    {
+      "id": "workflow_weekly",
+      "type": "text",
+      "x": -550,
+      "y": 250,
+      "width": 200,
+      "height": 100,
+      "text": "# Wöchentlich\n\n□ Überfällige Prüfungen\n  kontrollieren\n□ Statistiken\n  überprüfen"
+    },
+    {
+      "id": "workflow_monthly",
+      "type": "text",
+      "x": -300,
+      "y": 250,
+      "width": 200,
+      "height": 100,
+      "text": "# Monatlich\n\n□ CSV-Export\n  durchführen\n□ Datenbank-Backup\n□ Inspektionsquote"
+    },
+    {
+      "id": "workflow_yearly",
+      "type": "text",
+      "x": -50,
+      "y": 250,
+      "width": 200,
+      "height": 100,
+      "text": "# Jährlich\n\n□ Alte Daten\n  archivieren\n□ Geräte-Register\n  überprüfen\n□ Wartung"
+    },
+    {
+      "id": "features",
+      "type": "text",
+      "x": 250,
+      "y": 250,
+      "width": 250,
+      "height": 120,
+      "text": "# Spezial-Features\n\n✅ Auto. Inspektermin\n   (365 Tage)\n✅ Warnungen (Rot)\n✅ Inspektionshistorie\n✅ Automatische\n   Datenbank-Erstellung\n✅ Duplikat-Prävention"
+    },
+    {
+      "id": "vde_standards",
+      "type": "text",
+      "x": -800,
+      "y": 430,
+      "width": 280,
+      "height": 140,
+      "text": "# VDE Normkonformität\n\n📋 Normen:\n- DIN EN 50678 (VDE 0701)\n- DIN EN 50699 (VDE 0702)\n- DIN VDE 0751-1\n- DGUV Vorschrift 3\n- BetrSichV\n\n✓ Messungen speichern\n✓ Automatische Bewertung"
+    },
+    {
+      "id": "benning_compat",
+      "type": "text",
+      "x": -450,
+      "y": 430,
+      "width": 280,
+      "height": 140,
+      "text": "# Benning Kompatibilität\n\n🔧 Unterstützte Geräte:\n- Benning ST 710\n- Benning ST 750/750A\n- Benning ST 755+\n\n📥 Import (geplant v2.0):\n- CSV-Import\n- Barcode-Scanning"
+    },
+    {
+      "id": "security",
+      "type": "text",
+      "x": -50,
+      "y": 430,
+      "width": 280,
+      "height": 140,
+      "text": "# Sicherheit & Backup\n\n🔒 Lokal:\n- SQLite lokal\n- Keine Cloud\n- Dateien bleiben\n  auf System\n\n💾 Backup:\n- Einfache Dateikopie\n- Kein Server nötig"
+    },
+    {
+      "id": "future",
+      "type": "text",
+      "x": 300,
+      "y": 430,
+      "width": 200,
+      "height": 140,
+      "text": "# v2.0 Features\n\n□ Web-Interface\n□ Multi-User\n□ PDF-Export\n□ Email-Benach.\n□ Barcode-Scan\n□ Mobile App\n□ API Integration"
+    }
+  ],
+  "edges": [
+    {
+      "id": "menu->add",
+      "fromNode": "main_menu",
+      "fromSide": "right",
+      "toNode": "add_device",
+      "toSide": "left",
+      "label": "1"
+    },
+    {
+      "id": "menu->list",
+      "fromNode": "main_menu",
+      "fromSide": "right",
+      "toNode": "list_devices",
+      "toSide": "left",
+      "label": "2"
+    },
+    {
+      "id": "menu->details",
+      "fromNode": "main_menu",
+      "fromSide": "right",
+      "toNode": "view_details",
+      "toSide": "left",
+      "label": "3"
+    },
+    {
+      "id": "menu->inspect",
+      "fromNode": "main_menu",
+      "fromSide": "bottom",
+      "toNode": "add_inspection",
+      "toSide": "top",
+      "label": "4"
+    },
+    {
+      "id": "menu->stats",
+      "fromNode": "main_menu",
+      "fromSide": "bottom",
+      "toNode": "statistics",
+      "toSide": "top",
+      "label": "5"
+    },
+    {
+      "id": "menu->export",
+      "fromNode": "main_menu",
+      "fromSide": "bottom",
+      "toNode": "csv_export",
+      "toSide": "top",
+      "label": "6"
+    },
+    {
+      "id": "add->db",
+      "fromNode": "add_device",
+      "fromSide": "bottom",
+      "toNode": "device_table",
+      "toSide": "top",
+      "label": "INSERT"
+    },
+    {
+      "id": "inspect->db",
+      "fromNode": "add_inspection",
+      "fromSide": "bottom",
+      "toNode": "inspection_table",
+      "toSide": "top",
+      "label": "INSERT"
+    },
+    {
+      "id": "messwerte->measure",
+      "fromNode": "messwerte",
+      "fromSide": "bottom",
+      "toNode": "measurement_table",
+      "toSide": "top",
+      "label": "INSERT"
+    },
+    {
+      "id": "list->device",
+      "fromNode": "list_devices",
+      "fromSide": "bottom",
+      "toNode": "device_table",
+      "toSide": "top",
+      "label": "SELECT"
+    },
+    {
+      "id": "details->inspect",
+      "fromNode": "view_details",
+      "fromSide": "bottom",
+      "toNode": "inspection_table",
+      "toSide": "top",
+      "label": "SELECT"
+    },
+    {
+      "id": "stats->all",
+      "fromNode": "statistics",
+      "fromSide": "bottom",
+      "toNode": "device_table",
+      "toSide": "top",
+      "label": "COUNT/GROUP"
+    },
+    {
+      "id": "export->csv",
+      "fromNode": "csv_export",
+      "fromSide": "bottom",
+      "toNode": "device_table",
+      "toSide": "top",
+      "label": "SELECT ALL"
+    },
+    {
+      "id": "add->validate",
+      "fromNode": "add_device",
+      "fromSide": "right",
+      "toNode": "validation",
+      "toSide": "left",
+      "label": "Check"
+    },
+    {
+      "id": "inspect->validate",
+      "fromNode": "add_inspection",
+      "fromSide": "right",
+      "toNode": "validation",
+      "toSide": "left",
+      "label": "Check"
+    },
+    {
+      "id": "workflow->daily",
+      "fromNode": "statistics",
+      "fromSide": "bottom",
+      "toNode": "workflow_daily",
+      "toSide": "top"
+    },
+    {
+      "id": "workflow->weekly",
+      "fromNode": "statistics",
+      "fromSide": "bottom",
+      "toNode": "workflow_weekly",
+      "toSide": "top"
+    },
+    {
+      "id": "workflow->monthly",
+      "fromNode": "csv_export",
+      "fromSide": "bottom",
+      "toNode": "workflow_monthly",
+      "toSide": "top"
+    },
+    {
+      "id": "workflow->yearly",
+      "fromNode": "csv_export",
+      "fromSide": "bottom",
+      "toNode": "workflow_yearly",
+      "toSide": "top"
+    },
+    {
+      "id": "features->daily",
+      "fromNode": "features",
+      "fromSide": "bottom",
+      "toNode": "workflow_daily",
+      "toSide": "right"
+    },
+    {
+      "id": "vde->inspect",
+      "fromNode": "vde_standards",
+      "fromSide": "top",
+      "toNode": "add_inspection",
+      "toSide": "bottom"
+    },
+    {
+      "id": "benning->compat",
+      "fromNode": "benning_compat",
+      "fromSide": "top",
+      "toNode": "list_devices",
+      "toSide": "bottom"
+    },
+    {
+      "id": "security->db",
+      "fromNode": "security",
+      "fromSide": "top",
+      "toNode": "database",
+      "toSide": "bottom"
+    }
+  ]
+}

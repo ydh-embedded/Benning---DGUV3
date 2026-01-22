@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ device.name }} - Benning Device Manager{% endblock %}
+
+{% block content %}
+<div class="device-detail">
+    <div class="detail-header">
+        <h2>🔧 {{ device.name }}</h2>
+        <span class="badge badge-{{ device.status }}">{{ device.status }}</span>
+    </div>
+    
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h3>Geräteinformationen</h3>
+            <dl>
+                <dt>ID:</dt><dd>{{ device.id }}</dd>
+                <dt>Typ:</dt><dd>{{ device.type }}</dd>
+                <dt>Standort:</dt><dd>{{ device.location }}</dd>
+                <dt>Hersteller:</dt><dd>{{ device.manufacturer }}</dd>
+                <dt>Seriennummer:</dt><dd>{{ device.serial_number }}</dd>
+                <dt>Kaufdatum:</dt><dd>{{ device.purchase_date }}</dd>
+            </dl>
+        </div>
+        
+        <div class="detail-card">
+            <h3>Prüfstatus</h3>
+            <dl>
+                <dt>Letzte Prüfung:</dt><dd>{{ device.last_inspection }}</dd>
+                <dt>Nächste Prüfung:</dt><dd>{{ device.next_inspection }}</dd>
+                <dt>Status:</dt><dd>{{ device.status }}</dd>
+            </dl>
+            <div class="qr-section">
+                <img src="{{ url_for('generate_qr', device_id=device.id) }}" alt="QR Code" style="width: 150px;">
+            </div>
+        </div>
+    </div>
+    
+    <div class="inspections-section">
+        <h3>📝 Prüfhistorie</h3>
+        {% if inspections %}
+        <table class="device-table">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Prüfer</th>
+                    <th>Ergebnis</th>
+                    <th>Notizen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inspection in inspections %}
+                <tr>
+                    <td>{{ inspection.inspection_date }}</td>
+                    <td>{{ inspection.inspector_name }}</td>
+                    <td><span class="badge badge-{{ inspection.result }}">{{ inspection.result }}</span></td>
+                    <td>{{ inspection.notes }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Keine Prüfungen vorhanden.</p>
+        {% endif %}
+    </div>
+    
+    <div class="button-group">
+        <button onclick="history.back()" class="btn-secondary">← Zurück</button>
+    </div>
+</div>
+{% endblock %}

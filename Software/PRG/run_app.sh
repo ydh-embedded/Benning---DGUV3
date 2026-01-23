@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ################################################################################
-# Run App - Startet die Benning Device Manager Anwendung
-# Mit korrektem Python-Pfad-Handling
+# Run App - Startet die Benning Device Manager Anwendung (FIXED)
+# Mit korrektem Python-Pfad-Handling für alle Shells
 #
-# Verwendung: bash run_app.sh
+# Verwendung: bash run_app_fixed.sh
 ################################################################################
 
 set -e
@@ -30,7 +30,7 @@ print_info() {
     echo -e "${YELLOW}ℹ $1${NC}"
 }
 
-print_header "🚀 Benning Device Manager - Startup"
+print_header "🚀 Benning Device Manager - Startup (FIXED)"
 
 # Überprüfe Verzeichnis
 if [ ! -f "src/main.py" ]; then
@@ -50,7 +50,7 @@ fi
 
 print_success "Virtual Environment gefunden"
 
-# Setze Python-Pfad
+# Setze Python-Pfad (WICHTIG!)
 export PYTHONPATH="${PWD}:${PYTHONPATH}"
 
 print_info "Python-Pfad: $PYTHONPATH"
@@ -58,12 +58,12 @@ print_info "Python: $(venv/bin/python --version)"
 
 # Überprüfe Konfiguration
 if [ ! -f ".env" ]; then
-    print_info "Erstelle .env aus .env.example..."
-    if [ -f ".env.example" ]; then
-        cp .env.example .env
+    print_info "Erstelle .env aus .env.docker..."
+    if [ -f ".env.docker" ]; then
+        cp .env.docker .env
         print_success ".env erstellt"
     else
-        print_info ".env.example nicht gefunden - verwende Defaults"
+        print_info ".env.docker nicht gefunden - verwende Defaults"
     fi
 fi
 
@@ -81,15 +81,4 @@ cd "$(dirname "$0")" || exit 1
 export PYTHONPATH="${PWD}:${PYTHONPATH}"
 
 # Nutze die venv Python
-exec venv/bin/python -c "
-import sys
-import os
-sys.path.insert(0, os.getcwd())
-from src.main import create_app
-app = create_app()
-print('🚀 Benning Device Manager startet...')
-print('📍 http://localhost:5000')
-print('🔧 Debug-Modus: aktiviert')
-print('')
-app.run(host='0.0.0.0', port=5000, debug=True)
-"
+exec venv/bin/python src/main.py

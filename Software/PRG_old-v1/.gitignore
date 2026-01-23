@@ -2,5 +2,7 @@ venv/
 __pycache__/
 *.pyc
 .env
+*.db
 *.log
-static/uploads/
+.DS_Store
+app.py

@@ -31,19 +31,17 @@ echo ""
 # 4. .env
 if not test -f ".env"
     echo "⚙️  Erstelle .env Datei..."
-    cat > .env << 'EOF'
-FLASK_ENV=development
-FLASK_DEBUG=True
-SECRET_KEY=dev-secret-key-change-in-production
-DB_HOST=localhost
-DB_PORT=3307
-DB_USER=benning
-DB_PASSWORD=benning
-DB_NAME=benning_device_manager
-UPLOAD_FOLDER=static/uploads
-MAX_CONTENT_LENGTH=10485760
-LOG_LEVEL=DEBUG
-EOF
+    echo "FLASK_ENV=development" > .env
+    echo "FLASK_DEBUG=True" >> .env
+    echo "SECRET_KEY=dev-secret-key-change-in-production" >> .env
+    echo "DB_HOST=localhost" >> .env
+    echo "DB_PORT=3307" >> .env
+    echo "DB_USER=benning" >> .env
+    echo "DB_PASSWORD=benning" >> .env
+    echo "DB_NAME=benning_device_manager" >> .env
+    echo "UPLOAD_FOLDER=static/uploads" >> .env
+    echo "MAX_CONTENT_LENGTH=10485760" >> .env
+    echo "LOG_LEVEL=DEBUG" >> .env
 end
 
 echo "✓ Setup abgeschlossen!"

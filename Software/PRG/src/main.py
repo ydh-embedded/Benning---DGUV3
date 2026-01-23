@@ -1,15 +1,16 @@
 """Benning Device Manager - Hexagonal Architecture Edition"""
+import sys
+from pathlib import Path
+
+# Füge das Projektverzeichnis zum Python-Pfad hinzu BEVOR Module importiert werden
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 from flask import Flask
 from src.config.settings import get_config
 from src.config.dependencies import container
 from src.adapters.web.routes.device_routes import device_bp
-import sys
-from pathlib import Path
-
-# Füge das Projektverzeichnis zum Python-Pfad hinzu
-project_root = Path(__file__).parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
 
 def create_app():
     app = Flask(__name__)

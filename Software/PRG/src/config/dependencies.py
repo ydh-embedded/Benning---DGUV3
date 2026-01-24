@@ -13,14 +13,8 @@ class Container:
         self._init_usecases()
 
     def _init_repositories(self):
-        db_config = {
-            'host': self.config.DB_HOST,
-            'port': self.config.DB_PORT,
-            'user': self.config.DB_USER,
-            'password': self.config.DB_PASSWORD,
-            'database': self.config.DB_NAME
-        }
-        self.device_repository = MySQLDeviceRepository(db_config)
+        # MySQLDeviceRepository lädt die Config aus .env selbst
+        self.device_repository = MySQLDeviceRepository()
 
     def _init_usecases(self):
         self.get_device_usecase = GetDeviceUseCase(self.device_repository)

@@ -1,14 +1,14 @@
 version: '3.8'
 
 # ============================================================================
-# Benning Device Manager - Podman Compose
+# Benning Device Manager - Podman Compose (Korrigiert für Podman)
 # Optimiert für CachyOS
 # ============================================================================
 
 services:
   # ANCHOR: MySQL Database
   mysql:
-    image: mysql:8.0
+    image: docker.io/library/mysql:8.0
     container_name: benning-mysql
     restart: unless-stopped
     environment:
@@ -22,11 +22,6 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./benning_schema_WITH_CUSTOMER.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - benning-network
 
@@ -35,11 +30,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.benning
+    image: localhost/prg_flask:latest
     container_name: benning-flask
     restart: unless-stopped
     depends_on:
-      mysql:
-        condition: service_healthy
+      - mysql
     environment:
       FLASK_APP: src.main
       FLASK_ENV: ${FLASK_ENV:-production}
@@ -56,18 +51,12 @@ services:
       - ./:/app:ro
       - ./static:/app/static
       - ./templates:/app/templates
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     networks:
       - benning-network
 
   # ANCHOR: Nginx Reverse Proxy (Optional)
   nginx:
-    image: nginx:alpine
+    image: docker.io/library/nginx:alpine
     container_name: benning-nginx
     restart: unless-stopped
     depends_on:

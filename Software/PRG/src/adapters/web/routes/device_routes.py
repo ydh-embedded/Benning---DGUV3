@@ -1,4 +1,4 @@
-"""Device Routes Adapter - FINAL mit ID Auto-Increment"""
+"""Device Routes Adapter - FINAL mit Customer-basierter ID"""
 from flask import Blueprint, request, jsonify
 from src.core.domain.device import Device
 from src.config.dependencies import container
@@ -11,6 +11,8 @@ def list_devices():
         devices = container.list_devices_usecase.execute()
         return jsonify([{
             'id': d.id,
+            'customer': d.customer,
+            'device_id': d.device_id,
             'name': d.name,
             'type': d.type,
             'location': d.location,
@@ -28,6 +30,8 @@ def get_device(device_id: str):
         if device:
             return jsonify({
                 'id': device.id,
+                'customer': device.customer,
+                'device_id': device.device_id,
                 'name': device.name,
                 'type': device.type,
                 'location': device.location,
@@ -58,6 +62,8 @@ def create_device():
         data = request.json
         device = Device(
             id=data.get('id'),
+            customer=data.get('customer'),
+            device_id=data.get('device_id'),
             name=data.get('name'),
             type=data.get('type'),
             location=data.get('location'),
@@ -69,7 +75,8 @@ def create_device():
         )
         created = container.create_device_usecase.execute(device)
         return jsonify({
-            'id': created.id, 
+            'id': created.id,
+            'device_id': created.device_id,
             'message': 'Device created',
             'next_id': container.device_repository.get_next_id()
         }), 201
@@ -81,7 +88,8 @@ def update_device(device_id: str):
     try:
         data = request.json
         device = Device(
-            id=device_id,
+            device_id=device_id,
+            customer=data.get('customer'),
             name=data.get('name'),
             type=data.get('type'),
             location=data.get('location'),
@@ -94,6 +102,8 @@ def update_device(device_id: str):
         updated = container.update_device_usecase.execute(device)
         return jsonify({'message': 'Device updated', 'device': {
             'id': updated.id,
+            'device_id': updated.device_id,
+            'customer': updated.customer,
             'name': updated.name,
             'type': updated.type
         }})

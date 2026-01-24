@@ -1,26 +1,21 @@
 -- ============================================================================
--- Benning Device Manager - Sauberes Datenbankschema
--- ============================================================================
--- Datenbank: benning_device_manager
--- Tabellen: devices, inspections, users
+-- Benning Device Manager - Schema mit Kunde und QR-Code
 -- ============================================================================
 
--- ANCHOR: Drop existing database
 DROP DATABASE IF EXISTS benning_device_manager;
-
--- ANCHOR: Create database
 CREATE DATABASE benning_device_manager 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
--- ANCHOR: Use database
 USE benning_device_manager;
 
 -- ============================================================================
--- ANCHOR: Devices Table
+-- ANCHOR: Devices Table (mit Kunde und QR-Code)
 -- ============================================================================
-CREATE TABLE devices (
+CREATE TABLE IF NOT EXISTS devices (
     id INT PRIMARY KEY AUTO_INCREMENT,
+    customer VARCHAR(255) NOT NULL COMMENT 'Kundenname für ID-Format',
+    device_id VARCHAR(255) UNIQUE NOT NULL COMMENT 'Formatierte ID: Kunde-00001',
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
     serial_number VARCHAR(255) UNIQUE,
@@ -31,9 +26,12 @@ CREATE TABLE devices (
     last_inspection DATE,
     next_inspection DATE,
     status ENUM('active', 'inactive', 'maintenance', 'retired') DEFAULT 'active',
+    qr_code LONGBLOB COMMENT 'QR-Code als PNG/Base64',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_customer (customer),
+    INDEX idx_device_id (device_id),
     INDEX idx_name (name),
     INDEX idx_serial (serial_number),
     INDEX idx_status (status),
@@ -43,7 +41,7 @@ CREATE TABLE devices (
 -- ============================================================================
 -- ANCHOR: Inspections Table
 -- ============================================================================
-CREATE TABLE inspections (
+CREATE TABLE IF NOT EXISTS inspections (
     id INT PRIMARY KEY AUTO_INCREMENT,
     device_id INT NOT NULL,
     inspection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -59,9 +57,9 @@ CREATE TABLE inspections (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
--- ANCHOR: Users Table (für zukünftige Authentifizierung)
+-- ANCHOR: Users Table
 -- ============================================================================
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -77,7 +75,7 @@ CREATE TABLE users (
 -- ============================================================================
 -- ANCHOR: Audit Log Table
 -- ============================================================================
-CREATE TABLE audit_log (
+CREATE TABLE IF NOT EXISTS audit_log (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
     action VARCHAR(100),
@@ -91,41 +89,7 @@ CREATE TABLE audit_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
--- ANCHOR: Seed Data - Test Devices
--- ============================================================================
-INSERT INTO devices (name, type, serial_number, manufacturer, model, location, purchase_date, status, notes)
-VALUES
-    (1, 'USB-C Kabel', 'USB-C', 'SN001', 'Benning', 'Model-X', 'Lager A', '2023-01-15', 'active', 'Standard USB-C Testgerät'),
-    (2, 'USB-C Kabel', 'USB-C', 'SN002', 'Benning', 'Model-Y', 'Lager B', '2023-02-20', 'active', 'Backup Gerät'),
-    (3, 'USB-A Kabel', 'USB-A', 'SN003', 'Generic', 'Model-Z', 'Lager A', '2022-12-10', 'maintenance', 'Wartung erforderlich');
-
--- ============================================================================
--- ANCHOR: Seed Data - Test Inspections
--- ============================================================================
-INSERT INTO inspections (device_id, result, notes, inspector)
-VALUES
-    (1, 'pass', 'Alle Tests bestanden', 'Admin'),
-    (2, 'pass', 'Funktioniert einwandfrei', 'Admin'),
-    (3, 'fail', 'Fehler erkannt, Wartung geplant', 'Inspector');
-
--- ============================================================================
--- ANCHOR: Seed Data - Test User
--- ============================================================================
-INSERT INTO users (username, email, password_hash, role, active)
-VALUES
-    ('admin', 'admin@benning.local', 'hashed_password_here', 'admin', TRUE),
-    ('inspector', 'inspector@benning.local', 'hashed_password_here', 'inspector', TRUE),
-    ('viewer', 'viewer@benning.local', 'hashed_password_here', 'viewer', TRUE);
-
--- ============================================================================
--- ANCHOR: Verify Schema
+-- Datenbankschema erfolgreich erstellt!
 -- ============================================================================
 SHOW TABLES;
 DESC devices;
-DESC inspections;
-DESC users;
-DESC audit_log;
-
--- ============================================================================
--- Datenbankschema erfolgreich erstellt!
--- ============================================================================

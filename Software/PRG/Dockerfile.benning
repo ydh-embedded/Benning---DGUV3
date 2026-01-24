@@ -5,7 +5,6 @@
 
 FROM python:3.11-slim
 
-# ANCHOR: Set working directory
 WORKDIR /app
 
 # ANCHOR: Install system dependencies
@@ -13,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     make \
-    libmysqlclient-dev \
+    libmariadb-dev \
     pkg-config \
     git \
     curl \
@@ -21,21 +20,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # ANCHOR: Copy requirements
 COPY requirements_hexagon.txt .
-COPY requirements_test.txt .
 
 # ANCHOR: Install Python dependencies with CachyOS optimizations
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONOPTIMIZE=2
-ENV CFLAGS="-march=native -O3"
-ENV CXXFLAGS="-march=native -O3"
+ENV PYTHONOPTIMIZE=2 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements_hexagon.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install -r requirements_hexagon.txt
 
 # ANCHOR: Copy application code
 COPY . .
 
-# ANCHOR: Create non-root user
+# ANCHOR: Create non-root user for security
 RUN useradd -m -u 1000 benning && \
     chown -R benning:benning /app
 

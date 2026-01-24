@@ -1,4 +1,4 @@
-"""Device Domain Model - Mit Customer Support"""
+"""Device Domain Model - Saubere Version"""
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
@@ -11,8 +11,6 @@ class Device:
     # ANCHOR: Required Fields
     id: Optional[int] = None
     name: str = ""
-    customer: Optional[str] = None
-    device_id: Optional[str] = None
     
     # ANCHOR: Optional Fields
     type: Optional[str] = None
@@ -24,7 +22,6 @@ class Device:
     last_inspection: Optional[str] = None
     next_inspection: Optional[str] = None
     status: str = "active"
-    qr_code: Optional[bytes] = None
     notes: Optional[str] = None
     
     # ANCHOR: Timestamps
@@ -48,8 +45,8 @@ class Device:
     def __repr__(self) -> str:
         """String representation of Device"""
         return (
-            f"Device(id={self.id}, device_id='{self.device_id}', name='{self.name}', "
-            f"customer={self.customer}, type={self.type}, status={self.status})"
+            f"Device(id={self.id}, name='{self.name}', type={self.type}, "
+            f"serial={self.serial_number}, status={self.status})"
         )
 
     def __eq__(self, other) -> bool:
@@ -62,8 +59,6 @@ class Device:
         """Convert device to dictionary"""
         return {
             'id': self.id,
-            'device_id': self.device_id,
-            'customer': self.customer,
             'name': self.name,
             'type': self.type,
             'serial_number': self.serial_number,

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Schnellerfassung - Benning Device Manager{% endblock %}
+
+{% block content %}
+<div class="quick-add">
+    <h2>⚡ Schnellerfassung</h2>
+    
+    <form id="quickAddForm">
+        <div class="form-group">
+            <label>Geräte-ID:</label>
+            <input type="text" id="deviceId" name="id" value="{{ next_id }}" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>Gerätename: *</label>
+            <input type="text" name="name" required autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label>Typ:</label>
+            <select name="type">
+                <option value="Elektrowerkzeug">Elektrowerkzeug</option>
+                <option value="Kabel">Kabel</option>
+                <option value="Verlängerung">Verlängerung</option>
+                <option value="Reinigungsgerät">Reinigungsgerät</option>
+                <option value="Sonstiges">Sonstiges</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Standort:</label>
+            <input type="text" name="location">
+        </div>
+        
+        <div class="form-group">
+            <label>Hersteller:</label>
+            <input type="text" name="manufacturer">
+        </div>
+        
+        <div class="form-group">
+            <label>Seriennummer:</label>
+            <input type="text" name="serial_number">
+        </div>
+        
+        <div class="form-group">
+            <label>Kaufdatum:</label>
+            <input type="date" name="purchase_date">
+        </div>
+        
+        <div class="form-group">
+            <label>Notizen:</label>
+            <textarea name="notes" rows="3"></textarea>
+        </div>
+        
+        <div class="button-group">
+            <button type="submit" class="btn-primary">💾 Speichern & Weiter</button>
+            <button type="button" onclick="location.href='{{ url_for('devices') }}'" class="btn-secondary">📋 Zur Liste</button>
+        </div>
+    </form>
+    
+    <div id="message" class="message"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('quickAddForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    try {
+        const response = await fetch('/api/devices', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('message').innerHTML = '✅ Gerät erfolgreich gespeichert!';
+            document.getElementById('message').className = 'message success';
+            
+            // Formular zurücksetzen und neue ID setzen
+            e.target.reset();
+            document.getElementById('deviceId').value = result.next_id;
+            
+            // Fokus auf Name-Feld
+            document.querySelector('input[name="name"]').focus();
+            
+            setTimeout(() => {
+                document.getElementById('message').innerHTML = '';
+            }, 3000);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('message').innerHTML = '❌ Fehler: ' + error.message;
+        document.getElementById('message').className = 'message error';
+    }
+});
+</script>
+{% endblock %}

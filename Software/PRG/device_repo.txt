@@ -28,8 +28,6 @@ class MySQLDeviceRepository:
             return None
         return Device(
             id=row.get('id'),
-            customer=row.get('customer'),
-            device_id=row.get('device_id'),
             name=row.get('name'),
             type=row.get('type'),
             location=row.get('location'),
@@ -39,30 +37,10 @@ class MySQLDeviceRepository:
             last_inspection=row.get('last_inspection'),
             next_inspection=row.get('next_inspection'),
             status=row.get('status', 'active'),
-            qr_code=row.get('qr_code'),
             notes=row.get('notes'),
             created_at=row.get('created_at'),
             updated_at=row.get('updated_at'),
         )
-
-    def _generate_device_id(self, customer: str) -> str:
-        """Generate device ID in format: Customer-00001"""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor(dictionary=True)
-            
-            # Get max counter for this customer
-            query = "SELECT COUNT(*) as count FROM devices WHERE customer = %s"
-            cursor.execute(query, (customer,))
-            result = cursor.fetchone()
-            cursor.close()
-            conn.close()
-            
-            count = (result.get('count') or 0) + 1
-            return f"{customer}-{count:05d}"
-        except Exception as e:
-            print(f"Error generating device ID: {e}")
-            return f"{customer}-00001"
 
     def create(self, device: Device) -> Device:
         """Create new device and return it"""
@@ -70,20 +48,15 @@ class MySQLDeviceRepository:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            # Generate device_id if not provided
-            if not device.device_id and device.customer:
-                device.device_id = self._generate_device_id(device.customer)
-
             query = """
                 INSERT INTO devices 
-                (customer, device_id, name, type, location, manufacturer, serial_number, 
-                 purchase_date, status, qr_code, notes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (id, name, type, location, manufacturer, serial_number, 
+                 purchase_date, status, notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             cursor.execute(query, (
-                device.customer if device.customer else None,
-                device.device_id if device.device_id else None,
+                device.id,
                 device.name if device.name else None,
                 device.type if device.type else None,
                 device.location if device.location else None,
@@ -91,7 +64,6 @@ class MySQLDeviceRepository:
                 device.serial_number if device.serial_number else None,
                 device.purchase_date if device.purchase_date else None,
                 device.status if device.status else 'active',
-                device.qr_code if device.qr_code else None,
                 device.notes if device.notes else None
             ))
 
@@ -99,6 +71,7 @@ class MySQLDeviceRepository:
             cursor.close()
             conn.close()
             
+            # Gebe das Device Objekt zurück
             return device
         except Exception as e:
             print(f"Error creating device: {e}")
@@ -110,7 +83,7 @@ class MySQLDeviceRepository:
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
 
-            query = "SELECT * FROM devices WHERE device_id = %s"
+            query = "SELECT * FROM devices WHERE id = %s"
             cursor.execute(query, (device_id,))
 
             result = cursor.fetchone()
@@ -148,14 +121,13 @@ class MySQLDeviceRepository:
 
             query = """
                 UPDATE devices 
-                SET customer = %s, name = %s, type = %s, location = %s, manufacturer = %s,
+                SET name = %s, type = %s, location = %s, manufacturer = %s,
                     serial_number = %s, purchase_date = %s, status = %s, notes = %s,
                     updated_at = NOW()
-                WHERE device_id = %s
+                WHERE id = %s
             """
 
             cursor.execute(query, (
-                device.customer if device.customer else None,
                 device.name if device.name else None,
                 device.type if device.type else None,
                 device.location if device.location else None,
@@ -164,14 +136,15 @@ class MySQLDeviceRepository:
                 device.purchase_date if device.purchase_date else None,
                 device.status if device.status else 'active',
                 device.notes if device.notes else None,
-                device.device_id
+                device.id
             ))
 
             conn.commit()
             cursor.close()
             conn.close()
             
-            return self.get_by_id(device.device_id)
+            # Gebe das aktualisierte Device zurück
+            return self.get_by_id(device.id)
         except Exception as e:
             print(f"Error updating device: {e}")
             raise
@@ -182,7 +155,7 @@ class MySQLDeviceRepository:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            query = "DELETE FROM devices WHERE device_id = %s"
+            query = "DELETE FROM devices WHERE id = %s"
             cursor.execute(query, (device_id,))
 
             conn.commit()

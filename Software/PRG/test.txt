@@ -1,0 +1,238 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.2, pytest-7.4.3, pluggy-1.6.0 -- /home/y/Dokumente/vsCode/Benning-DGUV3/Software/PRG/venv/bin/python3.14
+cachedir: .pytest_cache
+metadata: {'Python': '3.14.2', 'Platform': 'Linux-6.18.6-2-cachyos-x86_64-with-glibc2.42', 'Packages': {'pytest': '7.4.3', 'pluggy': '1.6.0'}, 'Plugins': {'metadata': '3.1.1', 'mock': '3.12.0', 'html': '4.1.1', 'cov': '4.1.0'}}
+rootdir: /home/y/Dokumente/vsCode/Benning-DGUV3/Software/PRG
+configfile: pytest.ini
+testpaths: tests
+plugins: metadata-3.1.1, mock-3.12.0, html-4.1.1, cov-4.1.0
+collecting ... collected 74 items
+
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_list_devices_success PASSED [  1%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_list_devices_empty PASSED [  2%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_list_devices_error PASSED [  4%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_get_device_success PASSED [  5%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_get_device_not_found PASSED [  6%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_create_device_success PASSED [  8%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_create_device_missing_name PASSED [  9%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_create_device_duplicate_id PASSED [ 10%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_update_device_success PASSED [ 12%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_update_device_not_found FAILED [ 13%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_delete_device_success PASSED [ 14%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_delete_device_not_found PASSED [ 16%]
+tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_get_next_id_success PASSED [ 17%]
+tests/test_device_api_integration.py::TestFrontendRoutes::test_index_route PASSED [ 18%]
+tests/test_device_api_integration.py::TestFrontendRoutes::test_devices_route PASSED [ 20%]
+tests/test_device_api_integration.py::TestFrontendRoutes::test_device_detail_route FAILED [ 21%]
+tests/test_device_api_integration.py::TestFrontendRoutes::test_quick_add_get PASSED [ 22%]
+tests/test_device_api_integration.py::TestFrontendRoutes::test_quick_add_post PASSED [ 24%]
+tests/test_device_api_integration.py::TestAPIErrorHandling::test_malformed_json PASSED [ 25%]
+tests/test_device_api_integration.py::TestAPIErrorHandling::test_missing_content_type PASSED [ 27%]
+tests/test_device_api_integration.py::TestAPIErrorHandling::test_nonexistent_endpoint PASSED [ 28%]
+tests/test_device_domain.py::TestDeviceCreation::test_device_creation_with_all_fields FAILED [ 29%]
+tests/test_device_domain.py::TestDeviceCreation::test_device_creation_with_minimal_fields FAILED [ 31%]
+tests/test_device_domain.py::TestDeviceCreation::test_device_default_values FAILED [ 32%]
+tests/test_device_domain.py::TestDeviceCreation::test_device_timestamps_set_automatically FAILED [ 33%]
+tests/test_device_domain.py::TestDeviceUpdate::test_device_update_single_field FAILED [ 35%]
+tests/test_device_domain.py::TestDeviceUpdate::test_device_update_multiple_fields FAILED [ 36%]
+tests/test_device_domain.py::TestDeviceUpdate::test_device_update_nonexistent_field FAILED [ 37%]
+tests/test_device_domain.py::TestDeviceUpdate::test_device_update_timestamp_changes FAILED [ 39%]
+tests/test_device_domain.py::TestDeviceRepresentation::test_device_repr FAILED [ 40%]
+tests/test_device_domain.py::TestDeviceRepresentation::test_device_repr_with_none_id FAILED [ 41%]
+tests/test_device_domain.py::TestDeviceValidation::test_device_with_empty_name FAILED [ 43%]
+tests/test_device_domain.py::TestDeviceValidation::test_device_with_special_characters FAILED [ 44%]
+tests/test_device_domain.py::TestDeviceValidation::test_device_with_long_description FAILED [ 45%]
+tests/test_device_domain.py::TestDeviceEquality::test_two_devices_with_same_data PASSED [ 47%]
+tests/test_device_domain.py::TestDeviceEquality::test_two_devices_with_different_data PASSED [ 48%]
+tests/test_device_usecases.py::TestGetDeviceUseCase::test_get_device_success PASSED [ 50%]
+tests/test_device_usecases.py::TestGetDeviceUseCase::test_get_device_not_found PASSED [ 51%]
+tests/test_device_usecases.py::TestGetDeviceUseCase::test_get_device_repository_error PASSED [ 52%]
+tests/test_device_usecases.py::TestListDevicesUseCase::test_list_devices_success PASSED [ 54%]
+tests/test_device_usecases.py::TestListDevicesUseCase::test_list_devices_empty PASSED [ 55%]
+tests/test_device_usecases.py::TestListDevicesUseCase::test_list_devices_repository_error PASSED [ 56%]
+tests/test_device_usecases.py::TestCreateDeviceUseCase::test_create_device_success PASSED [ 58%]
+tests/test_device_usecases.py::TestCreateDeviceUseCase::test_create_device_with_minimal_data FAILED [ 59%]
+tests/test_device_usecases.py::TestCreateDeviceUseCase::test_create_device_repository_error FAILED [ 60%]
+tests/test_device_usecases.py::TestCreateDeviceUseCase::test_create_device_duplicate_id PASSED [ 62%]
+tests/test_device_usecases.py::TestUpdateDeviceUseCase::test_update_device_success PASSED [ 63%]
+tests/test_device_usecases.py::TestUpdateDeviceUseCase::test_update_device_not_found PASSED [ 64%]
+tests/test_device_usecases.py::TestUpdateDeviceUseCase::test_update_device_repository_error PASSED [ 66%]
+tests/test_device_usecases.py::TestUpdateDeviceUseCase::test_update_device_partial_fields PASSED [ 67%]
+tests/test_device_usecases.py::TestDeleteDeviceUseCase::test_delete_device_success PASSED [ 68%]
+tests/test_device_usecases.py::TestDeleteDeviceUseCase::test_delete_device_not_found PASSED [ 70%]
+tests/test_device_usecases.py::TestDeleteDeviceUseCase::test_delete_device_repository_error PASSED [ 71%]
+tests/test_device_usecases.py::TestDeleteDeviceUseCase::test_delete_multiple_devices PASSED [ 72%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryConnection::test_connection_success PASSED [ 74%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryConnection::test_connection_with_correct_config PASSED [ 75%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryCreate::test_create_device_success FAILED [ 77%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryCreate::test_create_device_with_null_fields PASSED [ 78%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryCreate::test_create_device_database_error PASSED [ 79%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryRead::test_get_by_id_success PASSED [ 81%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryRead::test_get_by_id_not_found PASSED [ 82%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryRead::test_get_all_success PASSED [ 83%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryRead::test_get_all_empty PASSED [ 85%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryUpdate::test_update_device_success PASSED [ 86%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryUpdate::test_update_device_with_null_fields FAILED [ 87%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryDelete::test_delete_device_success PASSED [ 89%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryDelete::test_delete_device_error PASSED [ 90%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryHelpers::test_get_recent_success PASSED [ 91%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryHelpers::test_get_by_status_success PASSED [ 93%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryHelpers::test_get_next_id_success PASSED [ 94%]
+tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryHelpers::test_get_next_id_empty_table PASSED [ 95%]
+tests/unit/domain/test_device.py::test_device_creation FAILED            [ 97%]
+tests/unit/domain/test_device.py::test_device_update FAILED              [ 98%]
+tests/unit/domain/test_device.py::test_device_repr PASSED                [100%]
+
+=================================== FAILURES ===================================
+_____________ TestDeviceAPIEndpoints.test_update_device_not_found ______________
+tests/test_device_api_integration.py:181: in test_update_device_not_found
+    assert response.status_code == 200  # UseCase gibt None zurück
+E   assert 500 == 200
+E    +  where 500 = <WrapperTestResponse streamed [500 INTERNAL SERVER ERROR]>.status_code
+_________________ TestFrontendRoutes.test_device_detail_route __________________
+tests/test_device_api_integration.py:233: in test_device_detail_route
+    response = client.get('/device/1')
+venv/lib/python3.14/site-packages/werkzeug/test.py:1243: in get
+    return self.open(*args, **kw)
+venv/lib/python3.14/site-packages/flask/testing.py:232: in open
+    response = super().open(
+venv/lib/python3.14/site-packages/werkzeug/test.py:1197: in open
+    response = self.run_wsgi_app(request.environ, buffered=buffered)
+venv/lib/python3.14/site-packages/werkzeug/test.py:1069: in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+venv/lib/python3.14/site-packages/werkzeug/test.py:1345: in run_wsgi_app
+    app_rv = app(environ, start_response)
+venv/lib/python3.14/site-packages/flask/app.py:2213: in __call__
+    return self.wsgi_app(environ, start_response)
+venv/lib/python3.14/site-packages/flask/app.py:2193: in wsgi_app
+    response = self.handle_exception(e)
+venv/lib/python3.14/site-packages/flask/app.py:2190: in wsgi_app
+    response = self.full_dispatch_request()
+venv/lib/python3.14/site-packages/flask/app.py:1486: in full_dispatch_request
+    rv = self.handle_user_exception(e)
+venv/lib/python3.14/site-packages/flask/app.py:1484: in full_dispatch_request
+    rv = self.dispatch_request()
+venv/lib/python3.14/site-packages/flask/app.py:1469: in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+src/main.py:42: in device_detail
+    return render_template('device_detail.html', device={}, inspections=[])
+venv/lib/python3.14/site-packages/flask/templating.py:151: in render_template
+    return _render(app, template, context)
+venv/lib/python3.14/site-packages/flask/templating.py:132: in _render
+    rv = template.render(context)
+/usr/lib/python3.14/site-packages/jinja2/environment.py:1295: in render
+    self.environment.handle_exception()
+/usr/lib/python3.14/site-packages/jinja2/environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+templates/device_detail.html:1: in top-level template code
+    {% extends "base.html" %}
+templates/base.html:22: in top-level template code
+    {% block content %}{% endblock %}
+templates/device_detail.html:33: in block 'content'
+    <img src="{{ url_for('generate_qr', device_id=device.id) }}" alt="QR Code" style="width: 150px;">
+venv/lib/python3.14/site-packages/flask/app.py:1697: in url_for
+    return self.handle_url_build_error(error, endpoint, values)
+venv/lib/python3.14/site-packages/flask/app.py:1686: in url_for
+    rv = url_adapter.build(  # type: ignore[union-attr]
+venv/lib/python3.14/site-packages/werkzeug/routing/map.py:950: in build
+    raise BuildError(endpoint, values, method, self)
+E   werkzeug.routing.exceptions.BuildError: Could not build url for endpoint 'generate_qr' with values ['device_id']. Did you mean 'devices.create_device' instead?
+___________ TestDeviceCreation.test_device_creation_with_all_fields ____________
+tests/test_device_domain.py:12: in test_device_creation_with_all_fields
+    device = Device(
+E   TypeError: Device.__init__() got an unexpected keyword argument 'device_type'
+_________ TestDeviceCreation.test_device_creation_with_minimal_fields __________
+tests/test_device_domain.py:32: in test_device_creation_with_minimal_fields
+    device = Device(name="Minimal Device")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+________________ TestDeviceCreation.test_device_default_values _________________
+tests/test_device_domain.py:42: in test_device_default_values
+    device = Device()
+E   TypeError: Device.__init__() missing 2 required positional arguments: 'id' and 'name'
+_________ TestDeviceCreation.test_device_timestamps_set_automatically __________
+tests/test_device_domain.py:55: in test_device_timestamps_set_automatically
+    device = Device(name="Test")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+_______________ TestDeviceUpdate.test_device_update_single_field _______________
+tests/test_device_domain.py:72: in test_device_update_single_field
+    device.update(name="New Name")
+E   AttributeError: 'Device' object has no attribute 'update'
+_____________ TestDeviceUpdate.test_device_update_multiple_fields ______________
+tests/test_device_domain.py:79: in test_device_update_multiple_fields
+    device = Device(id=1, name="Old", device_type="Old Type")
+E   TypeError: Device.__init__() got an unexpected keyword argument 'device_type'
+____________ TestDeviceUpdate.test_device_update_nonexistent_field _____________
+tests/test_device_domain.py:92: in test_device_update_nonexistent_field
+    device.update(nonexistent_field="value")
+E   AttributeError: 'Device' object has no attribute 'update'
+____________ TestDeviceUpdate.test_device_update_timestamp_changes _____________
+tests/test_device_domain.py:101: in test_device_update_timestamp_changes
+    device.update(name="Updated")
+E   AttributeError: 'Device' object has no attribute 'update'
+__________________ TestDeviceRepresentation.test_device_repr ___________________
+tests/test_device_domain.py:116: in test_device_repr
+    assert "name=Test Device" in repr_str
+E   assert 'name=Test Device' in "Device(id=1, name='Test Device', type=None, location=None, manufacturer=None, serial_number='SN123', purchase_date=None, last_inspection=None, next_inspection=None, status='active', notes=None, created_at=None, updated_at=None)"
+____________ TestDeviceRepresentation.test_device_repr_with_none_id ____________
+tests/test_device_domain.py:121: in test_device_repr_with_none_id
+    device = Device(name="Test", serial_number="SN456")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+_______________ TestDeviceValidation.test_device_with_empty_name _______________
+tests/test_device_domain.py:133: in test_device_with_empty_name
+    device = Device(name="")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+___________ TestDeviceValidation.test_device_with_special_characters ___________
+tests/test_device_domain.py:138: in test_device_with_special_characters
+    device = Device(
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+____________ TestDeviceValidation.test_device_with_long_description ____________
+tests/test_device_domain.py:149: in test_device_with_long_description
+    device = Device(description=long_desc)
+E   TypeError: Device.__init__() got an unexpected keyword argument 'description'
+_________ TestCreateDeviceUseCase.test_create_device_with_minimal_data _________
+tests/test_device_usecases.py:116: in test_create_device_with_minimal_data
+    device = Device(name="Minimal")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+_________ TestCreateDeviceUseCase.test_create_device_repository_error __________
+tests/test_device_usecases.py:128: in test_create_device_repository_error
+    device = Device(name="Test")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+__________ TestMySQLDeviceRepositoryCreate.test_create_device_success __________
+tests/test_mysql_device_repository.py:76: in test_create_device_success
+    device = Device(
+E   TypeError: Device.__init__() got an unexpected keyword argument 'device_type'
+_____ TestMySQLDeviceRepositoryUpdate.test_update_device_with_null_fields ______
+tests/test_mysql_device_repository.py:238: in test_update_device_with_null_fields
+    device = Device(id=1, name="Test", device_type="")
+E   TypeError: Device.__init__() got an unexpected keyword argument 'device_type'
+_____________________________ test_device_creation _____________________________
+tests/unit/domain/test_device.py:6: in test_device_creation
+    device = Device(name="Test Device", serial_number="SN123")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+______________________________ test_device_update ______________________________
+tests/unit/domain/test_device.py:12: in test_device_update
+    device = Device(name="Old Name")
+E   TypeError: Device.__init__() missing 1 required positional argument: 'id'
+=========================== short test summary info ============================
+FAILED tests/test_device_api_integration.py::TestDeviceAPIEndpoints::test_update_device_not_found
+FAILED tests/test_device_api_integration.py::TestFrontendRoutes::test_device_detail_route
+FAILED tests/test_device_domain.py::TestDeviceCreation::test_device_creation_with_all_fields
+FAILED tests/test_device_domain.py::TestDeviceCreation::test_device_creation_with_minimal_fields
+FAILED tests/test_device_domain.py::TestDeviceCreation::test_device_default_values
+FAILED tests/test_device_domain.py::TestDeviceCreation::test_device_timestamps_set_automatically
+FAILED tests/test_device_domain.py::TestDeviceUpdate::test_device_update_single_field
+FAILED tests/test_device_domain.py::TestDeviceUpdate::test_device_update_multiple_fields
+FAILED tests/test_device_domain.py::TestDeviceUpdate::test_device_update_nonexistent_field
+FAILED tests/test_device_domain.py::TestDeviceUpdate::test_device_update_timestamp_changes
+FAILED tests/test_device_domain.py::TestDeviceRepresentation::test_device_repr
+FAILED tests/test_device_domain.py::TestDeviceRepresentation::test_device_repr_with_none_id
+FAILED tests/test_device_domain.py::TestDeviceValidation::test_device_with_empty_name
+FAILED tests/test_device_domain.py::TestDeviceValidation::test_device_with_special_characters
+FAILED tests/test_device_domain.py::TestDeviceValidation::test_device_with_long_description
+FAILED tests/test_device_usecases.py::TestCreateDeviceUseCase::test_create_device_with_minimal_data
+FAILED tests/test_device_usecases.py::TestCreateDeviceUseCase::test_create_device_repository_error
+FAILED tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryCreate::test_create_device_success
+FAILED tests/test_mysql_device_repository.py::TestMySQLDeviceRepositoryUpdate::test_update_device_with_null_fields
+FAILED tests/unit/domain/test_device.py::test_device_creation - TypeError: De...
+FAILED tests/unit/domain/test_device.py::test_device_update - TypeError: Devi...
+======================== 21 failed, 53 passed in 0.37s =========================

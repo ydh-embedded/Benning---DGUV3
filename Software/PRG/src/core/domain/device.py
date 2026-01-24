@@ -1,59 +1,80 @@
-"""Device Domain Model"""
-from dataclasses import dataclass
-from datetime import date, datetime
+"""Device Domain Model - Saubere Version"""
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Optional
 
 
 @dataclass
 class Device:
-    """Device Entity"""
-    id: str
-    name: str
+    """Device Entity - Hexagonal Architecture"""
+    
+    # ANCHOR: Required Fields
+    id: Optional[int] = None
+    name: str = ""
+    
+    # ANCHOR: Optional Fields
     type: Optional[str] = None
-    location: Optional[str] = None
-    manufacturer: Optional[str] = None
     serial_number: Optional[str] = None
-    purchase_date: Optional[date] = None
-    last_inspection: Optional[date] = None
-    next_inspection: Optional[date] = None
-    status: str = 'active'
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
+    location: Optional[str] = None
+    purchase_date: Optional[str] = None
+    last_inspection: Optional[str] = None
+    next_inspection: Optional[str] = None
+    status: str = "active"
     notes: Optional[str] = None
+    
+    # ANCHOR: Timestamps
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
-    def to_dict(self):
-        """Convert to dictionary"""
+    def __post_init__(self):
+        """Initialize timestamps if not provided"""
+        if self.created_at is None:
+            self.created_at = datetime.now()
+        if self.updated_at is None:
+            self.updated_at = datetime.now()
+
+    def update(self, **kwargs) -> None:
+        """Update device attributes and refresh timestamp"""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.updated_at = datetime.now()
+
+    def __repr__(self) -> str:
+        """String representation of Device"""
+        return (
+            f"Device(id={self.id}, name='{self.name}', type={self.type}, "
+            f"serial={self.serial_number}, status={self.status})"
+        )
+
+    def __eq__(self, other) -> bool:
+        """Compare devices by ID and name"""
+        if not isinstance(other, Device):
+            return False
+        return self.id == other.id and self.name == other.name
+
+    def to_dict(self) -> dict:
+        """Convert device to dictionary"""
         return {
             'id': self.id,
             'name': self.name,
             'type': self.type,
-            'location': self.location,
-            'manufacturer': self.manufacturer,
             'serial_number': self.serial_number,
+            'manufacturer': self.manufacturer,
+            'model': self.model,
+            'location': self.location,
             'purchase_date': self.purchase_date,
             'last_inspection': self.last_inspection,
             'next_inspection': self.next_inspection,
             'status': self.status,
             'notes': self.notes,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
 
-    @staticmethod
-    def from_dict(data: dict):
-        """Create from dictionary"""
-        return Device(
-            id=data.get('id'),
-            name=data.get('name'),
-            type=data.get('type'),
-            location=data.get('location'),
-            manufacturer=data.get('manufacturer'),
-            serial_number=data.get('serial_number'),
-            purchase_date=data.get('purchase_date'),
-            last_inspection=data.get('last_inspection'),
-            next_inspection=data.get('next_inspection'),
-            status=data.get('status', 'active'),
-            notes=data.get('notes'),
-            created_at=data.get('created_at'),
-            updated_at=data.get('updated_at'),
-        )
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Device':
+        """Create device from dictionary"""
+        return cls(**data)

@@ -1,6 +1,0 @@
-Flask==3.0.0
-mysql-connector-python==8.2.0
-qrcode[pil]==7.4.2
-reportlab==4.0.7
-Werkzeug==3.0.1
-python-dotenv==1.0.0

@@ -1,0 +1,64 @@
+# ============================================================================
+# Benning Device Manager - Dockerfile
+# Optimiert für CachyOS mit Podman
+# ============================================================================
+
+FROM python:3.11-slim
+
+# ANCHOR: Set working directory
+WORKDIR /app
+
+# ANCHOR: Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    libmysqlclient-dev \
+    pkg-config \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ANCHOR: Copy requirements
+COPY requirements_hexagon.txt .
+COPY requirements_test.txt .
+
+# ANCHOR: Install Python dependencies with CachyOS optimizations
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONOPTIMIZE=2
+ENV CFLAGS="-march=native -O3"
+ENV CXXFLAGS="-march=native -O3"
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements_hexagon.txt
+
+# ANCHOR: Copy application code
+COPY . .
+
+# ANCHOR: Create non-root user
+RUN useradd -m -u 1000 benning && \
+    chown -R benning:benning /app
+
+USER benning
+
+# ANCHOR: Expose port
+EXPOSE 5000
+
+# ANCHOR: Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# ANCHOR: Set environment variables
+ENV FLASK_APP=src.main
+ENV FLASK_ENV=production
+ENV PYTHONPATH=/app:$PYTHONPATH
+
+# ANCHOR: Run application
+CMD ["python", "-m", "gunicorn", \
+     "--bind", "0.0.0.0:5000", \
+     "--workers", "4", \
+     "--worker-class", "sync", \
+     "--timeout", "120", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "src.main:create_app()"]

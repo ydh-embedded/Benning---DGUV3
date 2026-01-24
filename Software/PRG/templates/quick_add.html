@@ -19,7 +19,7 @@
         
         <div class="form-group">
             <label>Typ:</label>
-            <select name="type">
+            <select name="type" id="deviceType">
                 <option value="Elektrowerkzeug">Elektrowerkzeug</option>
                 <option value="Kabel">Kabel</option>
                 <option value="USB-Kabel">USB-Kabel</option>
@@ -55,8 +55,8 @@
         </div>
         
         <div class="button-group">
-            <button type="submit" class="btn-primary">💾 Speichern & Weiter</button>
-            <button type="button" onclick="location.href='{{ url_for('devices') }}'" class="btn-secondary">📋 Zur Liste</button>
+            <button type="submit" class="btn-primary" id="submitBtn">💾 Speichern & Weiter</button>
+            <button type="button" id="backBtn" class="btn-secondary">📋 Zur Liste</button>
         </div>
     </form>
     
@@ -66,6 +66,12 @@
 
 {% block scripts %}
 <script>
+// Zur Liste Button
+document.getElementById('backBtn').addEventListener('click', () => {
+    window.location.href = '/devices';
+});
+
+// Form Submit
 document.getElementById('quickAddForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -84,6 +90,14 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
         if (result.success) {
             document.getElementById('message').innerHTML = '✅ Gerät erfolgreich gespeichert!';
             document.getElementById('message').className = 'message success';
+            
+            // Wenn USB-Kabel, zur USB-C Inspection leiten
+            if (data.type === 'USB-Kabel') {
+                setTimeout(() => {
+                    window.location.href = `/device/${result.next_id}/usbc-inspection`;
+                }, 1000);
+                return;
+            }
             
             // Formular zurücksetzen und neue ID setzen
             e.target.reset();

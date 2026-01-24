@@ -2,6 +2,7 @@
 
 # ============================================================================
 # Benning Device Manager - Installation Script für Podman/CachyOS
+# Mit optionalem Projekt-Pfad Parameter
 # ============================================================================
 
 set -e
@@ -9,6 +10,21 @@ set -e
 echo ""
 echo "🚀 Benning Device Manager - Podman Installation"
 echo "================================================"
+echo ""
+
+# ANCHOR: Get project path from parameter or use current directory
+PROJECT_PATH="${1:-.}"
+
+# ANCHOR: Check if path exists
+if [ ! -d "$PROJECT_PATH" ]; then
+    echo "❌ Pfad nicht gefunden: $PROJECT_PATH"
+    exit 1
+fi
+
+# ANCHOR: Change to project directory
+cd "$PROJECT_PATH"
+
+echo "📁 Projekt-Pfad: $(pwd)"
 echo ""
 
 # ANCHOR: Check if Podman is installed
@@ -27,6 +43,21 @@ fi
 
 echo "✅ Podman ist installiert"
 echo "   Version: $(podman --version)"
+echo ""
+
+# ANCHOR: Check if required files exist
+if [ ! -f "Dockerfile.benning" ]; then
+    echo "❌ Dockerfile.benning nicht gefunden!"
+    echo "   Stelle sicher, dass du im korrekten Verzeichnis bist"
+    exit 1
+fi
+
+if [ ! -f "podman-compose.yml" ]; then
+    echo "❌ podman-compose.yml nicht gefunden!"
+    exit 1
+fi
+
+echo "✅ Erforderliche Dateien gefunden"
 echo ""
 
 # ANCHOR: Create .env file if not exists
@@ -56,9 +87,25 @@ fi
 
 echo ""
 
+# ANCHOR: Check if source files exist
+if [ ! -d "src" ]; then
+    echo "⚠️  Warnung: src/ Verzeichnis nicht gefunden"
+    echo "   Stelle sicher, dass der Source-Code vorhanden ist"
+    echo ""
+fi
+
 # ANCHOR: Build images
 echo "🔨 Baue Docker Images..."
 podman-compose build
+
+echo ""
+
+# ANCHOR: Stop existing containers if running
+if podman ps -a | grep -q benning-flask; then
+    echo "⏹️  Stoppe existierende Container..."
+    podman-compose down
+    sleep 2
+fi
 
 echo ""
 
@@ -97,16 +144,9 @@ fi
 echo ""
 
 # ANCHOR: Show logs
-echo "📋 Aktuelle Logs:"
+echo "📋 Aktuelle Logs (letzte 20 Zeilen):"
 echo ""
-podman-compose logs -f --tail=20 &
-LOGS_PID=$!
-
-# ANCHOR: Wait a bit for logs to show
-sleep 3
-
-# ANCHOR: Kill logs process
-kill $LOGS_PID 2>/dev/null || true
+podman-compose logs --tail=20
 
 echo ""
 echo "================================================"
@@ -127,6 +167,8 @@ echo "   Logs anzeigen:     podman-compose logs -f"
 echo "   Services stoppen:  podman-compose down"
 echo "   Services starten:  podman-compose up -d"
 echo "   In Container:      podman exec -it benning-flask bash"
+echo ""
+echo "📍 Projekt-Verzeichnis: $(pwd)"
 echo ""
 echo "📚 Weitere Informationen:"
 echo "   Siehe: PODMAN_SETUP.md"

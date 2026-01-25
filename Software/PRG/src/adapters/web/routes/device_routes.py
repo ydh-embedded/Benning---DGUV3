@@ -26,7 +26,7 @@ def list_devices():
 @device_bp.route('/<device_id>', methods=['GET'])
 def get_device(device_id: str):
     try:
-        device = container.get_device_usecase.execute(device_id)
+        device = container.device_repository.get_by_device_id(device_id)
         if device:
             return jsonify({
                 'id': device.id,
@@ -117,3 +117,38 @@ def delete_device(device_id: str):
         return jsonify({'message': 'Device deleted'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+    
+
+# ============================================================================
+# HEALTH CHECK ROUTE
+# ============================================================================
+@device_bp.route('/health', methods=['GET'])
+def health_check():
+    """Überprüft den Gesundheitsstatus der Anwendung"""
+    try:
+        from src.adapters.services.health_check_service import HealthCheckService
+        from src.adapters.services.logger_service import LoggerService
+        
+        logger = LoggerService()
+        health = HealthCheckService()
+        
+        # Führe Health Check aus
+        health_status = health.full_health_check()
+        
+        # Logge den Health Check
+        logger.log_health_check(
+            status=health_status.get('overall_status'),
+            database_status=health_status.get('database', {}).get('status'),
+            response_time_ms=health_status.get('database', {}).get('response_time_ms')
+        )
+        
+        # Gebe Status zurück
+        status_code = 200 if health_status.get('overall_status') == 'healthy' else 503
+        return jsonify(health_status), status_code
+    except Exception as e:
+        logger.error("Health check failed", exception=e)
+        return jsonify({
+            'overall_status': 'unhealthy',
+            'error': str(e)
+        }), 503

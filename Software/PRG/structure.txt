@@ -1,0 +1,55 @@
+.
+├── benning_db.sh
+├── benning_schema_WITH_CUSTOMER.sql
+├── container_flask.txt
+├── db_operation.txt
+├── device_repo.txt
+├── device.txt
+├── Dockerfile.benning
+├── .env
+├── env.template
+├── errors.txt
+├── health_checks.txt
+├── logs.txt
+├── mapping_test.sh
+├── podman-compose.yml
+├── qr_code_generator.py
+├── requirements_hexagon.txt
+├── schema.sql
+├── src
+│   ├── adapters
+│   ├── config
+│   ├── core
+│   ├── __init__.py
+│   ├── main.py
+│   └── __pycache__
+├── static
+│   ├── css
+│   └── uploads
+├── structure.txt
+├── templates
+│   ├── base.html
+│   ├── device_detail.html
+│   ├── devices.html
+│   ├── error.html
+│   ├── index.html
+│   ├── quick_add.html
+│   ├── usbc_inspection.html
+│   └── usbc_inspections_list.html
+├── tests
+│   ├── conftest.py
+│   ├── fixtures
+│   ├── __init__.py
+│   ├── integration
+│   ├── __pycache__
+│   ├── test_device_api_integration.py
+│   ├── test_device_domain.py
+│   ├── test_device_usecases.py
+│   ├── test_mysql_device_repository.py
+│   └── unit
+└── Tools
+    ├── install_benning_podman_FINAL.sh
+    ├── install_benning_podman.sh
+    └── install_podman_cachyos.sh
+
+17 directories, 36 files

@@ -1,9 +1,10 @@
-"""MySQL Device Repository Implementation"""
+"""MySQL Device Repository Implementation - MIT QR-CODE GENERIERUNG"""
 import mysql.connector
 from typing import List, Optional
 from datetime import datetime
 import os
 from src.core.domain.device import Device
+from src.adapters.services.qr_code_generator import QRCodeGenerator
 
 
 class MySQLDeviceRepository:
@@ -51,7 +52,6 @@ class MySQLDeviceRepository:
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Get max counter for this customer
             query = "SELECT COUNT(*) as count FROM devices WHERE customer = %s"
             cursor.execute(query, (customer,))
             result = cursor.fetchone()
@@ -70,9 +70,20 @@ class MySQLDeviceRepository:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            # Generate device_id if not provided
             if not device.device_id and device.customer:
                 device.device_id = self._generate_device_id(device.customer)
+
+            if device.device_id and not device.qr_code:
+                try:
+                    qr_code_bytes = QRCodeGenerator.generate_qr_code(
+                        device_id=device.device_id,
+                        customer=device.customer or ""
+                    )
+                    if qr_code_bytes:
+                        device.qr_code = qr_code_bytes
+                        print(f"✓ QR-Code generiert für {device.device_id}")
+                except Exception as qr_error:
+                    print(f"⚠ QR-Code Generierung fehlgeschlagen: {qr_error}")
 
             query = """
                 INSERT INTO devices 

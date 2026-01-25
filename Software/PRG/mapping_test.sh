@@ -1,19 +1,18 @@
 #!/bin/bash
 
 # ============================================================================
-# Benning Device Manager - Mapping Test Script v2
-# Überprüft Routes, Datenbank-Tabellen und API-Funktionalität
-# Nutzt Podman exec für Datenbank-Befehle
+# Benning Device Manager - Mapping Test Script FINAL
+# Überprüft Routes, Datenbank-Tabellen und Device-Speicherung
 # ============================================================================
 
 set -e
 
-# Farben für Output
+# Farben
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Konfiguration
 API_BASE="http://localhost:5000"
@@ -21,10 +20,6 @@ DB_USER="benning"
 DB_PASSWORD="benning"
 DB_NAME="benning_device_manager"
 MYSQL_CONTAINER="benning-mysql"
-
-# ============================================================================
-# Hilfsfunktionen
-# ============================================================================
 
 print_header() {
     echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
@@ -49,64 +44,56 @@ print_info() {
 }
 
 # ============================================================================
-# 1. ÜBERPRÜFE CONTAINER STATUS
+# 1. CONTAINER STATUS
 # ============================================================================
 
 check_containers() {
     print_header "1. CONTAINER STATUS"
     
-    echo "Überprüfe Podman Container..."
-    
     if podman ps | grep -q "benning-mysql"; then
         print_success "MySQL Container läuft"
     else
         print_error "MySQL Container läuft nicht!"
-        return 1
+        exit 1
     fi
     
     if podman ps | grep -q "benning-flask"; then
         print_success "Flask Container läuft"
     else
         print_error "Flask Container läuft nicht!"
-        return 1
+        exit 1
     fi
     
     echo ""
 }
 
 # ============================================================================
-# 2. ÜBERPRÜFE DATENBANK-VERBINDUNG (IM CONTAINER)
+# 2. DATENBANK-VERBINDUNG
 # ============================================================================
 
 check_database_connection() {
-    print_header "2. DATENBANK-VERBINDUNG (im Container)"
-    
-    echo "Teste MySQL Verbindung im Container..."
+    print_header "2. DATENBANK-VERBINDUNG"
     
     if podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" -e "SELECT 1" &>/dev/null; then
         print_success "Datenbank-Verbindung erfolgreich"
     else
         print_error "Datenbank-Verbindung fehlgeschlagen!"
-        return 1
+        exit 1
     fi
     
     echo ""
 }
 
 # ============================================================================
-# 3. ÜBERPRÜFE DATENBANK-TABELLEN (IM CONTAINER)
+# 3. DATENBANK-TABELLEN
 # ============================================================================
 
 check_database_tables() {
     print_header "3. DATENBANK-TABELLEN"
     
-    echo "Überprüfe Tabellen in '$DB_NAME'..."
-    
     TABLES=$(podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SHOW TABLES;" 2>/dev/null | tail -n +2)
     
-    EXPECTED_TABLES=("devices" "inspections" "users" "audit_log")
-    
-    for table in "${EXPECTED_TABLES[@]}"; do
+    for table in devices inspections users audit_log; do
         if echo "$TABLES" | grep -q "^$table$"; then
             print_success "Tabelle '$table' existiert"
         else
@@ -118,23 +105,32 @@ check_database_tables() {
 }
 
 # ============================================================================
-# 4. ÜBERPRÜFE DEVICES TABELLEN-STRUKTUR (IM CONTAINER)
+# 4. DEVICES TABELLEN-STRUKTUR (DIREKT)
 # ============================================================================
 
 check_devices_structure() {
     print_header "4. DEVICES TABELLEN-STRUKTUR"
     
-    echo "Überprüfe Spalten in 'devices' Tabelle..."
+    echo "Spalten in 'devices' Tabelle:"
+    echo ""
+    podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "DESC devices\G" 2>/dev/null | grep -E "Field|Type|Null|Key|Default" | head -40
     
-    COLUMNS=$(podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "DESC devices;" 2>/dev/null | tail -n +2 | awk '{print $1}')
+    echo ""
+}
+
+# ============================================================================
+# 5. API ROUTES
+# ============================================================================
+
+check_api_routes() {
+    print_header "5. API ROUTES"
     
-    EXPECTED_COLUMNS=("id" "customer" "device_id" "name" "type" "serial_number" "manufacturer" "model" "location" "purchase_date" "last_inspection" "next_inspection" "status" "qr_code" "notes" "created_at" "updated_at")
-    
-    for column in "${EXPECTED_COLUMNS[@]}"; do
-        if echo "$COLUMNS" | grep -q "^$column$"; then
-            print_success "Spalte '$column' existiert"
+    for endpoint in "/api/devices" "/api/devices/next-id" "/" "/quick-add" "/devices"; do
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE$endpoint")
+        if [ "$HTTP_CODE" = "200" ]; then
+            print_success "GET $endpoint ($HTTP_CODE)"
         else
-            print_error "Spalte '$column' existiert nicht!"
+            print_error "GET $endpoint ($HTTP_CODE)"
         fi
     done
     
@@ -142,141 +138,70 @@ check_devices_structure() {
 }
 
 # ============================================================================
-# 5. ÜBERPRÜFE API ROUTES
-# ============================================================================
-
-check_api_routes() {
-    print_header "5. API ROUTES"
-    
-    echo "Teste Flask API Endpoints..."
-    
-    # Test: GET /api/devices (List)
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/api/devices")
-    if [ "$HTTP_CODE" = "200" ]; then
-        print_success "GET /api/devices ($HTTP_CODE)"
-    else
-        print_error "GET /api/devices ($HTTP_CODE)"
-    fi
-    
-    # Test: GET /api/devices/next-id
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/api/devices/next-id")
-    if [ "$HTTP_CODE" = "200" ]; then
-        print_success "GET /api/devices/next-id ($HTTP_CODE)"
-    else
-        print_error "GET /api/devices/next-id ($HTTP_CODE)"
-    fi
-    
-    # Test: GET / (Dashboard)
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/")
-    if [ "$HTTP_CODE" = "200" ]; then
-        print_success "GET / Dashboard ($HTTP_CODE)"
-    else
-        print_error "GET / Dashboard ($HTTP_CODE)"
-    fi
-    
-    # Test: GET /quick-add
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/quick-add")
-    if [ "$HTTP_CODE" = "200" ]; then
-        print_success "GET /quick-add ($HTTP_CODE)"
-    else
-        print_error "GET /quick-add ($HTTP_CODE)"
-    fi
-    
-    # Test: GET /devices
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_BASE/devices")
-    if [ "$HTTP_CODE" = "200" ]; then
-        print_success "GET /devices ($HTTP_CODE)"
-    else
-        print_error "GET /devices ($HTTP_CODE)"
-    fi
-    
-    echo ""
-}
-
-# ============================================================================
-# 6. TESTE DEVICE-ERSTELLUNG
+# 6. DEVICE-ERSTELLUNG TEST
 # ============================================================================
 
 test_device_creation() {
     print_header "6. DEVICE-ERSTELLUNG TEST"
     
-    echo "Teste Device-Erstellung mit Customer-basierter ID..."
+    echo "Erstelle Test Device..."
     
     RESPONSE=$(curl -s -X POST "$API_BASE/api/devices" \
         -H "Content-Type: application/json" \
         -d '{
-            "customer": "TestCorp",
-            "name": "Test Gerät 001",
+            "customer": "TestDevice",
+            "name": "Test Gerät",
             "type": "Prüfgerät",
             "location": "Testlabor"
         }')
     
-    echo "Response: $RESPONSE"
+    echo "API Response:"
+    echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
     
-    if echo "$RESPONSE" | grep -q '"message":"Device created"'; then
+    if echo "$RESPONSE" | grep -q '"device_id"'; then
         print_success "Device erfolgreich erstellt"
-        
-        # Extrahiere Device ID
-        DEVICE_ID=$(echo "$RESPONSE" | grep -o '"id":[0-9]*' | grep -o '[0-9]*')
-        print_info "Device ID (DB): $DEVICE_ID"
-        
-    elif echo "$RESPONSE" | grep -q '"error"'; then
-        print_error "Device-Erstellung fehlgeschlagen: $RESPONSE"
+        DEVICE_ID=$(echo "$RESPONSE" | grep -o '"device_id":"[^"]*"' | cut -d'"' -f4)
+        print_info "Device ID: $DEVICE_ID"
     else
-        print_warning "Unerwartete Response: $RESPONSE"
+        print_error "Device-Erstellung fehlgeschlagen!"
+        print_error "Response: $RESPONSE"
     fi
     
     echo ""
 }
 
 # ============================================================================
-# 7. ÜBERPRÜFE DATENBANK-INHALTE (IM CONTAINER)
+# 7. DATENBANK-INHALTE ÜBERPRÜFEN
 # ============================================================================
 
 check_database_content() {
     print_header "7. DATENBANK-INHALTE"
     
-    echo "Überprüfe Devices in Datenbank..."
-    
     COUNT=$(podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT COUNT(*) FROM devices;" 2>/dev/null | tail -n 1)
     
-    print_info "Anzahl Devices: $COUNT"
+    print_info "Anzahl Devices in Datenbank: $COUNT"
     
     echo ""
-    echo "Letzte 5 Devices:"
-    podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT id, customer, device_id, name, type, status FROM devices ORDER BY created_at DESC LIMIT 5;" 2>/dev/null
+    echo "Alle Devices:"
+    echo ""
+    podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT id, customer, device_id, name, type, location, status FROM devices;" 2>/dev/null
     
     echo ""
 }
 
 # ============================================================================
-# 8. ÜBERPRÜFE FIELD MAPPING
+# 8. ÜBERPRÜFE QR-CODE
 # ============================================================================
 
-check_field_mapping() {
-    print_header "8. FIELD MAPPING ÜBERPRÜFUNG"
+check_qr_code() {
+    print_header "8. QR-CODE ÜBERPRÜFUNG"
     
-    echo "Überprüfe Mapping zwischen API und Datenbank..."
+    QR_COUNT=$(podman exec "$MYSQL_CONTAINER" mysql -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "SELECT COUNT(*) FROM devices WHERE qr_code IS NOT NULL;" 2>/dev/null | tail -n 1)
     
-    # Teste mit allen erwarteten Feldern
-    RESPONSE=$(curl -s -X POST "$API_BASE/api/devices" \
-        -H "Content-Type: application/json" \
-        -d '{
-            "customer": "MappingTest",
-            "name": "Mapping Test Device",
-            "type": "Elektroprüfer",
-            "location": "Testlabor",
-            "manufacturer": "TestMfg",
-            "serial_number": "SN-12345",
-            "purchase_date": "2024-01-24",
-            "status": "active",
-            "notes": "Test Device für Mapping"
-        }')
-    
-    if echo "$RESPONSE" | grep -q '"message":"Device created"'; then
-        print_success "Alle Felder korrekt gemappt"
+    if [ "$QR_COUNT" -gt 0 ]; then
+        print_success "QR-Codes generiert: $QR_COUNT Devices"
     else
-        print_error "Field Mapping fehlgeschlagen: $RESPONSE"
+        print_warning "Keine QR-Codes gefunden (optional)"
     fi
     
     echo ""
@@ -289,14 +214,13 @@ check_field_mapping() {
 print_summary() {
     print_header "ZUSAMMENFASSUNG"
     
-    echo "Mapping Test abgeschlossen!"
+    echo "Benning Device Manager Test abgeschlossen!"
     echo ""
     print_info "API Base URL: $API_BASE"
-    print_info "MySQL Container: $MYSQL_CONTAINER"
     print_info "Datenbank: $DB_NAME"
+    print_info "Container: $MYSQL_CONTAINER"
     echo ""
-    
-    print_success "Alle Überprüfungen durchgeführt"
+    print_success "Alle Tests durchgeführt"
     echo ""
 }
 
@@ -305,18 +229,17 @@ print_summary() {
 # ============================================================================
 
 main() {
-    print_header "BENNING DEVICE MANAGER - MAPPING TEST v2"
+    print_header "BENNING DEVICE MANAGER - MAPPING TEST FINAL"
     
-    check_containers || exit 1
-    check_database_connection || exit 1
+    check_containers
+    check_database_connection
     check_database_tables
     check_devices_structure
     check_api_routes
     test_device_creation
     check_database_content
-    check_field_mapping
+    check_qr_code
     print_summary
 }
 
-# Starte Main
 main

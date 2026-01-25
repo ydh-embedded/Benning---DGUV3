@@ -272,3 +272,33 @@ main() {
 }
 
 main
+[2026-01-24 21:55:21 +0000] [1] [INFO] Using worker: sync
+[2026-01-24 21:55:21 +0000] [7] [INFO] Booting worker with pid: 7
+[2026-01-24 21:55:21 +0000] [8] [INFO] Booting worker with pid: 8
+[2026-01-24 21:55:21 +0000] [9] [INFO] Booting worker with pid: 9
+[2026-01-24 21:55:22 +0000] [10] [INFO] Booting worker with pid: 10
+10.89.0.141 - - [24/Jan/2026:21:55:33 +0000] "GET /quick-add HTTP/1.1" 200 6019 "http://localhost:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:33 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:33 +0000] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 207 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:35 +0000] "GET /quick-add HTTP/1.1" 200 6019 "http://localhost:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:35 +0000] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 207 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:35 +0000] "GET /static/css/style.css HTTP/1.1" 200 0 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:35 +0000] "GET /favicon.ico HTTP/1.1" 404 207 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:36 +0000] "GET /quick-add HTTP/1.1" 200 6019 "http://localhost:5000/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:36 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:36 +0000] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 207 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:40 +0000] "GET /api/devices/next-id?customer=Parloa HTTP/1.1" 200 21 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:55:56 +0000] "POST /api/devices HTTP/1.1" 201 97 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:01 +0000] "GET /devices HTTP/1.1" 200 1471 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:01 +0000] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 207 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:01 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "http://localhost:5000/devices" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:11 +0000] "GET /devices HTTP/1.1" 200 1471 "http://localhost:5000/devices" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:11 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "http://localhost:5000/devices" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:14 +0000] "GET /quick-add HTTP/1.1" 200 6019 "http://localhost:5000/devices" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:56:14 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "http://localhost:5000/quick-add" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+10.89.0.141 - - [24/Jan/2026:21:57:55 +0000] "GET /api/devices HTTP/1.1" 200 779 "-" "curl/8.18.0"
+10.89.0.141 - - [24/Jan/2026:21:57:55 +0000] "GET /api/devices/next-id HTTP/1.1" 200 21 "-" "curl/8.18.0"
+10.89.0.141 - - [24/Jan/2026:21:57:55 +0000] "GET / HTTP/1.1" 200 1702 "-" "curl/8.18.0"
+10.89.0.141 - - [24/Jan/2026:21:57:55 +0000] "GET /quick-add HTTP/1.1" 200 6019 "-" "curl/8.18.0"
+10.89.0.141 - - [24/Jan/2026:21:57:55 +0000] "GET /devices HTTP/1.1" 200 1471 "-" "curl/8.18.0"
+10.89.0.141 - - [24/Jan/2026:21:57:55 +0000] "POST /api/devices HTTP/1.1" 201 101 "-" "curl/8.18.0"

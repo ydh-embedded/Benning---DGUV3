@@ -1,6 +1,5 @@
 """Dependency Injection Container - Hexagonal Architecture"""
 import os
-from threading import Lock
 from src.adapters.persistence.mysql_device_repository import MySQLDeviceRepository
 from src.core.usecases.device_usecases import (
     CreateDeviceUseCase,
@@ -15,26 +14,10 @@ from src.adapters.services.logger_service import LoggerService
 class Container:
     """Dependency Injection Container for all use cases and repositories"""
     
-    _instance = None
-    _lock = Lock()
-    
-    def __new__(cls):
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super(Container, cls).__new__(cls)
-                    cls._instance._initialized = False
-        return cls._instance
-    
     def __init__(self):
-        # Nur einmal initialisieren (Singleton Pattern)
-        if self._initialized:
-            return
-        
         self.logger = LoggerService()
         self._init_repositories()
         self._init_usecases()
-        self._initialized = True
     
     def _init_repositories(self):
         """Initialize all repositories"""
@@ -75,5 +58,5 @@ class Container:
         self.logger.info("All use cases initialized successfully")
 
 
-# Create singleton container instance (nur einmal!)
+# Create singleton container instance
 container = Container()

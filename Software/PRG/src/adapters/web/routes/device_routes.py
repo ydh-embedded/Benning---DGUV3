@@ -1,23 +1,18 @@
-"""
-Improved Device Routes mit Input-Validierung
-Behebt varchar/string ID-Probleme
-"""
-
+"""Device Routes Adapter - mit customer_device_id und Input-Validierung"""
 from flask import Blueprint, request, jsonify
 from src.core.domain.device import Device
 from src.config.dependencies import container
 from src.adapters.web.dto.device_dto import (
     create_device_request_from_json,
-    update_device_request_from_json,
-    DeviceResponse
+    update_device_request_from_json
 )
 from datetime import datetime
 
-device_bp_improved = Blueprint('devices_improved', __name__, url_prefix='/api/v2/devices')
+device_bp = Blueprint('devices', __name__, url_prefix='/api/devices')
 
 
 def _clean_date_field(value):
-    """Convert empty string to None for date fields"""
+    """Convert empty string to None for date fields with validation"""
     if not value or (isinstance(value, str) and not value.strip()):
         return None
     if isinstance(value, str):
@@ -28,9 +23,8 @@ def _clean_date_field(value):
     return value
 
 
-@device_bp_improved.route('', methods=['GET'])
+@device_bp.route('', methods=['GET'])
 def list_devices():
-    """List all devices with error handling"""
     try:
         devices = container.list_devices_usecase.execute()
         return jsonify({
@@ -48,15 +42,11 @@ def list_devices():
             } for d in devices]
         })
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@device_bp_improved.route('/<customer_device_id>', methods=['GET'])
+@device_bp.route('/<customer_device_id>', methods=['GET'])
 def get_device(customer_device_id: str):
-    """Get device by customer_device_id with validation"""
     try:
         # Sanitize input
         customer_device_id = customer_device_id.strip() if customer_device_id else None
@@ -68,7 +58,6 @@ def get_device(customer_device_id: str):
             }), 400
         
         device = container.device_repository.get_by_customer_device_id(customer_device_id)
-        
         if device:
             return jsonify({
                 'success': True,
@@ -88,67 +77,41 @@ def get_device(customer_device_id: str):
                     'notes': device.notes
                 }
             })
-        
-        return jsonify({
-            'success': False,
-            'error': 'Device not found'
-        }), 404
-    
+        return jsonify({'success': False, 'error': 'Device not found'}), 404
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@device_bp_improved.route('/next-id', methods=['GET'])
+@device_bp.route('/next-id', methods=['GET'])
 def get_next_customer_device_id():
-    """Get next customer device ID with validation"""
+    """Get next customer device ID (e.g., Parloa-00001)"""
     try:
         customer = request.args.get('customer', '').strip()
-        
         if not customer:
-            return jsonify({
-                'success': False,
-                'error': 'Customer parameter required and cannot be empty'
-            }), 400
-        
-        if len(customer) > 255:
-            return jsonify({
-                'success': False,
-                'error': f'Customer name exceeds maximum length of 255 characters'
-            }), 400
+            return jsonify({'success': False, 'error': 'Customer parameter required'}), 400
         
         next_id = container.device_repository.get_next_customer_device_id(customer)
-        
         return jsonify({
             'success': True,
             'next_id': next_id
         })
-    
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@device_bp_improved.route('', methods=['POST'])
+@device_bp.route('', methods=['POST'])
 def create_device():
-    """Create device with full validation"""
     try:
         data = request.json or {}
         
-        # Parse and validate request
+        # Validate request with DTOs
         create_request, errors = create_device_request_from_json(data)
-        
         if errors:
             return jsonify({
                 'success': False,
                 'errors': errors
             }), 400
         
-        # Create Device domain object
         device = Device(
             customer=create_request.customer,
             customer_device_id=create_request.customer_device_id,
@@ -161,10 +124,7 @@ def create_device():
             status=create_request.status,
             notes=create_request.notes
         )
-        
-        # Create device
         created = container.create_device_usecase.execute(device)
-        
         return jsonify({
             'success': True,
             'device': {
@@ -176,27 +136,17 @@ def create_device():
             },
             'message': 'Device created successfully'
         }), 201
-    
     except ValueError as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 400
-    
+        return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@device_bp_improved.route('/<customer_device_id>', methods=['PUT'])
+@device_bp.route('/<customer_device_id>', methods=['PUT'])
 def update_device(customer_device_id: str):
-    """Update device with validation"""
     try:
         # Sanitize customer_device_id
         customer_device_id = customer_device_id.strip() if customer_device_id else None
-        
         if not customer_device_id:
             return jsonify({
                 'success': False,
@@ -205,16 +155,14 @@ def update_device(customer_device_id: str):
         
         data = request.json or {}
         
-        # Parse and validate request
+        # Validate request with DTOs
         update_request, errors = update_device_request_from_json(data)
-        
         if errors:
             return jsonify({
                 'success': False,
                 'errors': errors
             }), 400
         
-        # Create Device domain object
         device = Device(
             customer_device_id=customer_device_id,
             customer=update_request.customer,
@@ -227,10 +175,7 @@ def update_device(customer_device_id: str):
             status=update_request.status or 'active',
             notes=update_request.notes
         )
-        
-        # Update device
         updated = container.update_device_usecase.execute(device)
-        
         return jsonify({
             'success': True,
             'device': {
@@ -242,27 +187,17 @@ def update_device(customer_device_id: str):
             },
             'message': 'Device updated successfully'
         })
-    
     except ValueError as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 400
-    
+        return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@device_bp_improved.route('/<customer_device_id>', methods=['DELETE'])
+@device_bp.route('/<customer_device_id>', methods=['DELETE'])
 def delete_device(customer_device_id: str):
-    """Delete device with validation"""
     try:
         # Sanitize customer_device_id
         customer_device_id = customer_device_id.strip() if customer_device_id else None
-        
         if not customer_device_id:
             return jsonify({
                 'success': False,
@@ -270,22 +205,17 @@ def delete_device(customer_device_id: str):
             }), 400
         
         container.delete_device_usecase.execute(customer_device_id)
-        
         return jsonify({
             'success': True,
             'message': 'Device deleted successfully'
         })
-    
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@device_bp_improved.route('/health', methods=['GET'])
+@device_bp.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint with error handling"""
+    """Überprüft den Gesundheitsstatus der Anwendung"""
     try:
         from src.adapters.services.health_check_service import HealthCheckService
         from src.adapters.services.logger_service import LoggerService
@@ -293,19 +223,20 @@ def health_check():
         logger = LoggerService()
         health = HealthCheckService()
         
+        # Führe Health Check aus
         health_status = health.full_health_check()
         
+        # Logge den Health Check
         logger.log_health_check(
             status=health_status.get('overall_status'),
             database_status=health_status.get('database', {}).get('status'),
             response_time_ms=health_status.get('database', {}).get('response_time_ms')
         )
         
+        # Gebe Status zurück
         status_code = 200 if health_status.get('overall_status') == 'healthy' else 503
         return jsonify(health_status), status_code
-    
     except Exception as e:
-        logger.error("Health check failed", exception=e)
         return jsonify({
             'overall_status': 'unhealthy',
             'error': str(e)

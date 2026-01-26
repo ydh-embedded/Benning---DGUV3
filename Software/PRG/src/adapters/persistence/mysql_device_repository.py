@@ -1,8 +1,9 @@
-import mysql.connector
+"""MySQL Device Repository - Hexagonal Architecture Pattern mit customer_device_id - KORRIGIERTE VERSION"""
 import time
 from typing import List, Optional
 from src.core.domain.device import Device
 from src.adapters.services.logger_service import LoggerService
+import mysql.connector
 from mysql.connector import Error
 
 
@@ -10,7 +11,6 @@ class MySQLDeviceRepository:
     """MySQL implementation of Device Repository"""
     
     def __init__(self, host: str, port: int, user: str, password: str, database: str):
-        """Initialize MySQL Device Repository with database credentials"""
         self.host = host
         self.port = port
         self.user = user
@@ -20,7 +20,7 @@ class MySQLDeviceRepository:
         self.logger.info("MySQLDeviceRepository initialized", host=host)
     
     def _get_connection(self):
-        """Get MySQL connection with error handling"""
+        """Get MySQL connection"""
         try:
             conn = mysql.connector.connect(
                 host=self.host,
@@ -35,7 +35,7 @@ class MySQLDeviceRepository:
             raise
     
     def create(self, device: Device) -> Device:
-        """Create a new device with proper error handling"""
+        """Create a new device"""
         try:
             start_time = time.time()
             conn = self._get_connection()
@@ -43,7 +43,7 @@ class MySQLDeviceRepository:
             
             # Generate customer_device_id if not provided
             if not device.customer_device_id and device.customer:
-                device.customer_device_id = self.get_next_customer_device_id(device.customer)
+                device.customer_device_id = self._generate_customer_device_id(device.customer)
             
             # FIX: Konvertiere leere Strings zu NULL für serial_number
             # Dies verhindert Duplicate-Fehler bei leeren Seriennummern
@@ -67,8 +67,8 @@ class MySQLDeviceRepository:
                 device.type,
                 device.location,
                 device.manufacturer,
-                device.serial_number,
-                device.purchase_date,
+                device.serial_number,  # Jetzt NULL statt leerer String
+                device.purchase_date,  # Jetzt NULL statt leerer String
                 device.status or 'active',
                 device.notes
             )
@@ -93,9 +93,6 @@ class MySQLDeviceRepository:
             conn.close()
             
             return device
-        except mysql.connector.errors.IntegrityError as e:
-            self.logger.error(f"Duplicate entry error: {e}")
-            raise
         except Exception as e:
             self.logger.error(f"Failed to create device: {e}", exception=e)
             raise
@@ -103,58 +100,84 @@ class MySQLDeviceRepository:
     def get_by_id(self, device_id: int) -> Optional[Device]:
         """Get device by ID"""
         try:
+            start_time = time.time()
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
             
             query = "SELECT * FROM devices WHERE id = %s"
             cursor.execute(query, (device_id,))
+            result = cursor.fetchone()
             
-            row = cursor.fetchone()
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.log_db_operation(
+                operation="SELECT",
+                table="devices",
+                result="success",
+                duration_ms=duration_ms
+            )
+            
             cursor.close()
             conn.close()
             
-            if row:
-                return self._map_to_device(row)
+            if result:
+                return self._map_to_device(result)
             return None
         except Exception as e:
-            self.logger.error(f"Failed to get device by ID: {e}", exception=e)
+            self.logger.error(f"Failed to get device by id: {e}", exception=e)
             raise
     
     def get_by_customer_device_id(self, customer_device_id: str) -> Optional[Device]:
-        """Get device by customer_device_id"""
+        """Get device by customer_device_id (e.g. Parloa-00001)"""
         try:
+            start_time = time.time()
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
             
             query = "SELECT * FROM devices WHERE customer_device_id = %s"
             cursor.execute(query, (customer_device_id,))
+            result = cursor.fetchone()
             
-            row = cursor.fetchone()
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.log_db_operation(
+                operation="SELECT",
+                table="devices",
+                result="success",
+                duration_ms=duration_ms
+            )
+            
             cursor.close()
             conn.close()
             
-            if row:
-                return self._map_to_device(row)
+            if result:
+                return self._map_to_device(result)
             return None
         except Exception as e:
             self.logger.error(f"Failed to get device by customer_device_id: {e}", exception=e)
             raise
     
-    def list_all(self) -> List[Device]:
+    def get_all(self) -> List[Device]:
         """Get all devices"""
         try:
+            start_time = time.time()
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
             
             query = "SELECT * FROM devices ORDER BY id DESC"
             cursor.execute(query)
+            results = cursor.fetchall()
             
-            rows = cursor.fetchall()
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.log_db_operation(
+                operation="SELECT",
+                table="devices",
+                result="success",
+                duration_ms=duration_ms
+            )
+            
             cursor.close()
             conn.close()
             
-            devices = [self._map_to_device(row) for row in rows]
-            return devices
+            return [self._map_to_device(row) for row in results]
         except Exception as e:
             self.logger.error(f"Failed to get all devices: {e}", exception=e)
             raise
@@ -177,7 +200,7 @@ class MySQLDeviceRepository:
                 SET customer = %s, name = %s, type = %s, location = %s, 
                     manufacturer = %s, serial_number = %s, purchase_date = %s, 
                     status = %s, notes = %s
-                WHERE id = %s
+                WHERE customer_device_id = %s
             """
             
             values = (
@@ -188,9 +211,9 @@ class MySQLDeviceRepository:
                 device.manufacturer,
                 device.serial_number,
                 device.purchase_date,
-                device.status,
+                device.status or 'active',
                 device.notes,
-                device.id
+                device.customer_device_id
             )
             
             cursor.execute(query, values)
@@ -202,8 +225,7 @@ class MySQLDeviceRepository:
                 table="devices",
                 result="success",
                 duration_ms=duration_ms,
-                customer_device_id=device.customer_device_id,
-                customer=device.customer
+                customer_device_id=device.customer_device_id
             )
             
             cursor.close()
@@ -215,60 +237,69 @@ class MySQLDeviceRepository:
             raise
     
     def delete(self, customer_device_id: str) -> bool:
-        """Delete a device by customer_device_id"""
+        """Delete a device"""
         try:
+            start_time = time.time()
             conn = self._get_connection()
-            cursor = conn.cursor()
+            cursor = conn.cursor(dictionary=True)
             
             query = "DELETE FROM devices WHERE customer_device_id = %s"
             cursor.execute(query, (customer_device_id,))
             conn.commit()
             
-            affected_rows = cursor.rowcount
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.log_db_operation(
+                operation="DELETE",
+                table="devices",
+                result="success",
+                duration_ms=duration_ms,
+                customer_device_id=customer_device_id
+            )
+            
             cursor.close()
             conn.close()
             
-            return affected_rows > 0
+            return cursor.rowcount > 0
         except Exception as e:
             self.logger.error(f"Failed to delete device: {e}", exception=e)
             raise
     
     def get_next_customer_device_id(self, customer: str) -> str:
-        """Get next customer device ID with Database-Level Locking"""
-        conn = None
+        """Get next customer device ID (e.g., Parloa-00001)"""
         try:
             conn = self._get_connection()
-            conn.start_transaction(isolation_level='READ COMMITTED')
             cursor = conn.cursor(dictionary=True)
             
+            # Get the highest number for this customer
             query = """
                 SELECT MAX(CAST(SUBSTRING_INDEX(customer_device_id, '-', -1) AS UNSIGNED)) as max_num 
                 FROM devices 
                 WHERE customer = %s AND customer_device_id LIKE %s
-                FOR UPDATE
             """
             
-            cursor.execute(query, (customer, f"{customer}-%"))
+            pattern = f"{customer}-%"
+            cursor.execute(query, (customer, pattern))
             result = cursor.fetchone()
             
-            max_num = result['max_num'] if result and result['max_num'] else 0
-            next_num = max_num + 1
-            
-            conn.commit()
             cursor.close()
             conn.close()
             
-            return f"{customer}-{next_num:05d}"
+            max_num = result.get('max_num') if result else 0
+            next_num = (max_num or 0) + 1
             
+            # Format as "Customer-00001"
+            next_id = f"{customer}-{next_num:05d}"
+            
+            self.logger.debug(f"Generated customer_device_id: {next_id}", customer=customer)
+            
+            return next_id
         except Exception as e:
-            if conn:
-                try:
-                    conn.rollback()
-                except:
-                    pass
-            self.logger.error(f"Failed to get next customer device ID: {e}", exception=e)
-            import time
-            return f"{customer}-{int(time.time() % 100000):05d}"
+            self.logger.error(f"Failed to get next customer_device_id: {e}", exception=e)
+            return f"{customer}-00001"
+    
+    def _generate_customer_device_id(self, customer: str) -> str:
+        """Generate a new customer device ID"""
+        return self.get_next_customer_device_id(customer)
     
     def _map_to_device(self, row: dict) -> Device:
         """Map database row to Device domain object"""
@@ -282,8 +313,8 @@ class MySQLDeviceRepository:
             manufacturer=row.get('manufacturer'),
             serial_number=row.get('serial_number'),
             purchase_date=row.get('purchase_date'),
+            last_inspection=row.get('last_inspection'),
+            next_inspection=row.get('next_inspection'),
             status=row.get('status'),
-            notes=row.get('notes'),
-            created_at=row.get('created_at'),
-            updated_at=row.get('updated_at')
+            notes=row.get('notes')
         )

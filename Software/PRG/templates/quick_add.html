@@ -102,7 +102,113 @@
 {% endblock %}
 
 {% block scripts %}
+
 <script>
+// Setze Prüfdatum auf heute
+document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('inspectionDate').value = today;
+});
+
+// Berechne nächste Prüfung (12 Monate später)
+document.getElementById('inspectionDate').addEventListener('change', (e) => {
+    const inspectionDate = new Date(e.target.value);
+    const nextInspection = new Date(inspectionDate);
+    nextInspection.setFullYear(nextInspection.getFullYear() + 1);
+    const nextInspectionStr = nextInspection.toISOString().split('T')[0];
+    document.getElementById('nextInspectionDate').value = nextInspectionStr;
+});
+
+// Zur Liste Button
+document.getElementById('backBtn').addEventListener('click', () => {
+    window.location.href = '/devices';
+});
+
+// Generiere Device ID bei Kunde Eingabe
+document.getElementById('customerInput').addEventListener('change', async (e) => {
+    const customer = e.target.value.trim();
+    if (!customer) {
+        document.getElementById('deviceId').value = '';
+        return;
+    }
+    try {
+        const response = await fetch(`/api/devices/next-id?customer=${encodeURIComponent(customer)}`);
+        const result = await response.json();
+        if (result.success) {
+            document.getElementById('deviceId').value = result.next_id;
+        }
+    } catch (error) {
+        console.error('Fehler:', error);
+    }
+});
+
+// Form Submit
+document.getElementById('quickAddForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+    
+    // Validiere Prüfstatus
+    if (!data.status) {
+        document.getElementById('message').innerHTML = '❌ Fehler: Prüfstatus ist erforderlich';
+        document.getElementById('message').className = 'message error';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/devices', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('message').innerHTML = '✅ Gerät erfolgreich gespeichert!';
+            document.getElementById('message').className = 'message success';
+            
+            if (data.type === 'USB-Kabel') {
+                setTimeout(() => {
+                    window.location.href = `/device/${result.device.id}/usbc-inspection`;
+                }, 1000);
+                return;
+            }
+            
+            e.target.reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('inspectionDate').value = today;
+            
+            const customer = data.customer;
+            const response2 = await fetch(`/api/devices/next-id?customer=${encodeURIComponent(customer)}`);
+            const result2 = await response2.json();
+            
+            if (result2.success) {
+                document.getElementById('deviceId').value = result2.next_id;
+            }
+            
+            document.querySelector('input[name="name"]').focus();
+            setTimeout(() => {
+                document.getElementById('message').innerHTML = '';
+            }, 3000);
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        document.getElementById('message').innerHTML = '❌ Fehler: ' + error.message;
+        document.getElementById('message').className = 'message error';
+    }
+});
+</script>
+
+
+
+
+
+
+<script>
+
+
+
 // Zur Liste Button
 document.getElementById('backBtn').addEventListener('click', () => {
     window.location.href = '/devices';

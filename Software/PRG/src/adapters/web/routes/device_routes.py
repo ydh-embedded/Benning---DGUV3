@@ -1,4 +1,4 @@
-"""Device Routes Adapter - FINAL mit Customer-basierter ID und konsistenten Responses"""
+"""Device Routes Adapter - mit customer_device_id und QR-Code"""
 from flask import Blueprint, request, jsonify
 from src.core.domain.device import Device
 from src.config.dependencies import container
@@ -14,7 +14,7 @@ def list_devices():
             'data': [{
                 'id': d.id,
                 'customer': d.customer,
-                'device_id': d.device_id,
+                'customer_device_id': d.customer_device_id,
                 'name': d.name,
                 'type': d.type,
                 'location': d.location,
@@ -26,17 +26,17 @@ def list_devices():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@device_bp.route('/<device_id>', methods=['GET'])
-def get_device(device_id: str):
+@device_bp.route('/<customer_device_id>', methods=['GET'])
+def get_device(customer_device_id: str):
     try:
-        device = container.device_repository.get_by_device_id(device_id)
+        device = container.device_repository.get_by_customer_device_id(customer_device_id)
         if device:
             return jsonify({
                 'success': True,
                 'device': {
                     'id': device.id,
                     'customer': device.customer,
-                    'device_id': device.device_id,
+                    'customer_device_id': device.customer_device_id,
                     'name': device.name,
                     'type': device.type,
                     'location': device.location,
@@ -54,14 +54,14 @@ def get_device(device_id: str):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @device_bp.route('/next-id', methods=['GET'])
-def get_next_id():
-    """Get next device ID"""
+def get_next_customer_device_id():
+    """Get next customer device ID (e.g., Parloa-00001)"""
     try:
         customer = request.args.get('customer', '')
         if not customer:
             return jsonify({'success': False, 'error': 'Customer parameter required'}), 400
         
-        next_id = container.device_repository.get_next_id(customer)
+        next_id = container.device_repository.get_next_customer_device_id(customer)
         return jsonify({
             'success': True,
             'next_id': next_id
@@ -69,20 +69,23 @@ def get_next_id():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+def _clean_date_field(value):
+    """Convert empty string to None for date fields"""
+    return value if value and value.strip() else None
+
 @device_bp.route('', methods=['POST'])
 def create_device():
     try:
         data = request.json
         device = Device(
-            id=data.get('id'),
             customer=data.get('customer'),
-            device_id=data.get('device_id'),
+            customer_device_id=data.get('customer_device_id'),
             name=data.get('name'),
             type=data.get('type'),
             location=data.get('location'),
             manufacturer=data.get('manufacturer'),
             serial_number=data.get('serial_number'),
-            purchase_date=data.get('purchase_date'),
+            purchase_date=_clean_date_field(data.get('purchase_date')),
             status=data.get('status', 'active'),
             notes=data.get('notes')
         )
@@ -91,7 +94,7 @@ def create_device():
             'success': True,
             'device': {
                 'id': created.id,
-                'device_id': created.device_id,
+                'customer_device_id': created.customer_device_id,
                 'customer': created.customer,
                 'name': created.name,
                 'type': created.type
@@ -101,19 +104,19 @@ def create_device():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@device_bp.route('/<device_id>', methods=['PUT'])
-def update_device(device_id: str):
+@device_bp.route('/<customer_device_id>', methods=['PUT'])
+def update_device(customer_device_id: str):
     try:
         data = request.json
         device = Device(
-            device_id=device_id,
+            customer_device_id=customer_device_id,
             customer=data.get('customer'),
             name=data.get('name'),
             type=data.get('type'),
             location=data.get('location'),
             manufacturer=data.get('manufacturer'),
             serial_number=data.get('serial_number'),
-            purchase_date=data.get('purchase_date'),
+            purchase_date=_clean_date_field(data.get('purchase_date')),
             status=data.get('status', 'active'),
             notes=data.get('notes')
         )
@@ -122,7 +125,7 @@ def update_device(device_id: str):
             'success': True,
             'device': {
                 'id': updated.id,
-                'device_id': updated.device_id,
+                'customer_device_id': updated.customer_device_id,
                 'customer': updated.customer,
                 'name': updated.name,
                 'type': updated.type
@@ -132,10 +135,10 @@ def update_device(device_id: str):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@device_bp.route('/<device_id>', methods=['DELETE'])
-def delete_device(device_id: str):
+@device_bp.route('/<customer_device_id>', methods=['DELETE'])
+def delete_device(customer_device_id: str):
     try:
-        container.delete_device_usecase.execute(device_id)
+        container.delete_device_usecase.execute(customer_device_id)
         return jsonify({
             'success': True,
             'message': 'Device deleted successfully'

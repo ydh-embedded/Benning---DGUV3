@@ -1,18 +1,36 @@
-"""Device Domain Model - Mit Customer Support"""
-from dataclasses import dataclass, field
-from datetime import datetime
+"""Device Entity - Hexagonal Architecture mit customer_device_id"""
+from dataclasses import dataclass
 from typing import Optional
+from datetime import date
 
 
 @dataclass
 class Device:
-    """Device Entity - Hexagonal Architecture"""
+    """Device Entity - Hexagonal Architecture
+    
+    Attributes:
+        id: Numerische Datenbank-ID (auto-increment)
+        customer: Kundenname (z.B. "Parloa")
+        customer_device_id: Formatierte Kunden-ID (z.B. "Parloa-00001")
+        name: Gerätename
+        type: Gerätetyp (z.B. "Elektrowerkzeug")
+        serial_number: Seriennummer (UNIQUE)
+        manufacturer: Hersteller
+        model: Modell
+        location: Standort
+        purchase_date: Kaufdatum
+        last_inspection: Letzte Inspektion
+        next_inspection: Nächste Inspektion
+        status: Status (active, inactive, maintenance, retired)
+        qr_code: QR-Code als Bytes (PNG/Base64)
+        notes: Notizen
+    """
     
     # ANCHOR: Required Fields
     id: Optional[int] = None
     name: str = ""
     customer: Optional[str] = None
-    device_id: Optional[str] = None
+    customer_device_id: Optional[str] = None
     
     # ANCHOR: Optional Fields
     type: Optional[str] = None
@@ -20,66 +38,57 @@ class Device:
     manufacturer: Optional[str] = None
     model: Optional[str] = None
     location: Optional[str] = None
-    purchase_date: Optional[str] = None
-    last_inspection: Optional[str] = None
-    next_inspection: Optional[str] = None
+    purchase_date: Optional[date] = None
+    last_inspection: Optional[date] = None
+    next_inspection: Optional[date] = None
     status: str = "active"
     qr_code: Optional[bytes] = None
     notes: Optional[str] = None
     
-    # ANCHOR: Timestamps
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
     def __post_init__(self):
-        """Initialize timestamps if not provided"""
-        if self.created_at is None:
-            self.created_at = datetime.now()
-        if self.updated_at is None:
-            self.updated_at = datetime.now()
-
-    def update(self, **kwargs) -> None:
-        """Update device attributes and refresh timestamp"""
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        self.updated_at = datetime.now()
-
+        """Validate device after initialization"""
+        if not self.name:
+            raise ValueError("Device name is required")
+        if not self.customer:
+            raise ValueError("Customer is required")
+    
+    def __str__(self) -> str:
+        """String representation"""
+        return f"Device({self.customer_device_id}: {self.name})"
+    
     def __repr__(self) -> str:
-        """String representation of Device"""
+        """Detailed representation"""
         return (
-            f"Device(id={self.id}, device_id='{self.device_id}', name='{self.name}', "
-            f"customer={self.customer}, type={self.type}, status={self.status})"
+            f"Device(id={self.id}, customer_device_id={self.customer_device_id}, "
+            f"name={self.name}, type={self.type}, status={self.status})"
         )
-
-    def __eq__(self, other) -> bool:
-        """Compare devices by ID and name"""
-        if not isinstance(other, Device):
-            return False
-        return self.id == other.id and self.name == other.name
-
+    
+    def is_active(self) -> bool:
+        """Check if device is active"""
+        return self.status == "active"
+    
+    def is_due_for_inspection(self) -> bool:
+        """Check if device is due for inspection"""
+        if not self.next_inspection:
+            return True
+        from datetime import datetime
+        return datetime.now().date() >= self.next_inspection
+    
     def to_dict(self) -> dict:
         """Convert device to dictionary"""
         return {
             'id': self.id,
-            'device_id': self.device_id,
             'customer': self.customer,
+            'customer_device_id': self.customer_device_id,
             'name': self.name,
             'type': self.type,
             'serial_number': self.serial_number,
             'manufacturer': self.manufacturer,
             'model': self.model,
             'location': self.location,
-            'purchase_date': self.purchase_date,
-            'last_inspection': self.last_inspection,
-            'next_inspection': self.next_inspection,
+            'purchase_date': str(self.purchase_date) if self.purchase_date else None,
+            'last_inspection': str(self.last_inspection) if self.last_inspection else None,
+            'next_inspection': str(self.next_inspection) if self.next_inspection else None,
             'status': self.status,
-            'notes': self.notes,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'notes': self.notes
         }
-
-    @classmethod
-    def from_dict(cls, data: dict) -> 'Device':
-        """Create device from dictionary"""
-        return cls(**data)

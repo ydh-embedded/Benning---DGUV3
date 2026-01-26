@@ -1,4 +1,4 @@
-"""Device Routes Adapter - mit customer_device_id und Input-Validierung"""
+"""Device Routes - KORRIGIERTE VERSION mit verbesserter Fehlerbehandlung"""
 from flask import Blueprint, request, jsonify
 from src.core.domain.device import Device
 from src.config.dependencies import container
@@ -7,6 +7,7 @@ from src.adapters.web.dto.device_dto import (
     update_device_request_from_json
 )
 from datetime import datetime
+import mysql.connector
 
 device_bp = Blueprint('devices', __name__, url_prefix='/api/devices')
 
@@ -25,6 +26,7 @@ def _clean_date_field(value):
 
 @device_bp.route('', methods=['GET'])
 def list_devices():
+    """List all devices"""
     try:
         devices = container.list_devices_usecase.execute()
         return jsonify({
@@ -47,6 +49,7 @@ def list_devices():
 
 @device_bp.route('/<customer_device_id>', methods=['GET'])
 def get_device(customer_device_id: str):
+    """Get device by customer_device_id"""
     try:
         # Sanitize input
         customer_device_id = customer_device_id.strip() if customer_device_id else None
@@ -101,6 +104,7 @@ def get_next_customer_device_id():
 
 @device_bp.route('', methods=['POST'])
 def create_device():
+    """Create a new device"""
     try:
         data = request.json or {}
         
@@ -137,13 +141,49 @@ def create_device():
             'message': 'Device created successfully'
         }), 201
     except ValueError as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+        # ✅ FIX: Bessere Fehlerbehandlung für Validierungsfehler
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': 'validation_error'
+        }), 400
+    except mysql.connector.Error as e:
+        # ✅ FIX: Spezifische Fehlerbehandlung für Datenbank-Fehler
+        if e.errno == 1062:  # Duplicate entry
+            return jsonify({
+                'success': False,
+                'error': f'Duplicate entry detected: {str(e)}',
+                'error_type': 'duplicate_entry',
+                'error_code': 1062
+            }), 409  # Conflict
+        elif e.errno == 1054:  # Unknown column
+            return jsonify({
+                'success': False,
+                'error': f'Database schema error: {str(e)}',
+                'error_type': 'schema_error',
+                'error_code': 1054
+            }), 500
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Database error: {str(e)}',
+                'error_type': 'database_error',
+                'error_code': e.errno
+            }), 500
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        # ✅ FIX: Detaillierte Fehlerbehandlung für unerwartete Fehler
+        import traceback
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': 'unexpected_error',
+            'details': traceback.format_exc()
+        }), 500
 
 
 @device_bp.route('/<customer_device_id>', methods=['PUT'])
 def update_device(customer_device_id: str):
+    """Update an existing device"""
     try:
         # Sanitize customer_device_id
         customer_device_id = customer_device_id.strip() if customer_device_id else None
@@ -188,13 +228,42 @@ def update_device(customer_device_id: str):
             'message': 'Device updated successfully'
         })
     except ValueError as e:
-        return jsonify({'success': False, 'error': str(e)}), 400
+        # ✅ FIX: Bessere Fehlerbehandlung für Validierungsfehler
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': 'validation_error'
+        }), 400
+    except mysql.connector.Error as e:
+        # ✅ FIX: Spezifische Fehlerbehandlung für Datenbank-Fehler
+        if e.errno == 1062:  # Duplicate entry
+            return jsonify({
+                'success': False,
+                'error': f'Duplicate entry detected: {str(e)}',
+                'error_type': 'duplicate_entry',
+                'error_code': 1062
+            }), 409
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Database error: {str(e)}',
+                'error_type': 'database_error',
+                'error_code': e.errno
+            }), 500
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        # ✅ FIX: Detaillierte Fehlerbehandlung
+        import traceback
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'error_type': 'unexpected_error',
+            'details': traceback.format_exc()
+        }), 500
 
 
 @device_bp.route('/<customer_device_id>', methods=['DELETE'])
 def delete_device(customer_device_id: str):
+    """Delete a device"""
     try:
         # Sanitize customer_device_id
         customer_device_id = customer_device_id.strip() if customer_device_id else None
@@ -204,40 +273,23 @@ def delete_device(customer_device_id: str):
                 'error': 'customer_device_id cannot be empty'
             }), 400
         
-        container.delete_device_usecase.execute(customer_device_id)
-        return jsonify({
-            'success': True,
-            'message': 'Device deleted successfully'
-        })
+        success = container.device_repository.delete(customer_device_id)
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'Device {customer_device_id} deleted successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Device {customer_device_id} not found'
+            }), 404
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@device_bp.route('/health', methods=['GET'])
-def health_check():
-    """Überprüft den Gesundheitsstatus der Anwendung"""
-    try:
-        from src.adapters.services.health_check_service import HealthCheckService
-        from src.adapters.services.logger_service import LoggerService
-        
-        logger = LoggerService()
-        health = HealthCheckService()
-        
-        # Führe Health Check aus
-        health_status = health.full_health_check()
-        
-        # Logge den Health Check
-        logger.log_health_check(
-            status=health_status.get('overall_status'),
-            database_status=health_status.get('database', {}).get('status'),
-            response_time_ms=health_status.get('database', {}).get('response_time_ms')
-        )
-        
-        # Gebe Status zurück
-        status_code = 200 if health_status.get('overall_status') == 'healthy' else 503
-        return jsonify(health_status), status_code
-    except Exception as e:
+        # ✅ FIX: Detaillierte Fehlerbehandlung
+        import traceback
         return jsonify({
-            'overall_status': 'unhealthy',
-            'error': str(e)
-        }), 503
+            'success': False,
+            'error': str(e),
+            'error_type': 'unexpected_error',
+            'details': traceback.format_exc()
+        }), 500

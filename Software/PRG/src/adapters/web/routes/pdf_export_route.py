@@ -3,38 +3,31 @@ PDF Export Route für die Geräteliste
 Verwendet WeasyPrint zur PDF-Generierung
 """
 
-from flask import Blueprint, render_template_string, send_file, jsonify
+from flask import Blueprint, render_template_string, send_file, jsonify, current_app
 from io import BytesIO
 from datetime import datetime
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 import os
 
 # Blueprint für PDF-Export
 pdf_bp = Blueprint('pdf', __name__, url_prefix='/pdf')
 
 
-def get_devices_from_container(container):
-    """Hole alle Geräte aus der Repository"""
-    try:
-        devices = container.device_repository.get_all()
-        return devices
-    except Exception as e:
-        return []
-
-
 @pdf_bp.route('/devices', methods=['GET'])
-def export_devices_pdf(container=None):
+def export_devices_pdf():
     """
     Exportiere alle Geräte als PDF
     GET /pdf/devices
     """
     try:
-        # Hole alle Geräte
-        if container is None:
-            from src.config.dependencies import Container
-            container = Container()
+        # Hole den Container aus der App-Konfiguration
+        from src.config.dependencies import container
         
-        devices = get_devices_from_container(container)
+        # Hole alle Geräte
+        devices = container.list_devices_usecase.execute()
+        
+        if not devices:
+            devices = []
         
         # HTML Template für PDF
         html_template = """
@@ -114,10 +107,6 @@ def export_devices_pdf(container=None):
                     background-color: #f9f9f9;
                 }
                 
-                tbody tr:hover {
-                    background-color: #f0f0f0;
-                }
-                
                 .status-active {
                     color: #28a745;
                     font-weight: bold;
@@ -158,13 +147,6 @@ def export_devices_pdf(container=None):
                     size: A4;
                     margin: 20mm;
                 }
-                
-                @media print {
-                    body {
-                        margin: 0;
-                        padding: 0;
-                    }
-                }
             </style>
         </head>
         <body>
@@ -175,7 +157,7 @@ def export_devices_pdf(container=None):
             
             <div class="metadata">
                 <div>
-                    <strong>Gesamtzahl Geräte:</strong> {{ devices|length }}
+                    <strong>Gesamtzahl Geräte:</strong> {{ device_count }}
                 </div>
                 <div>
                     <strong>Generiert:</strong> {{ generated_date }}
@@ -201,7 +183,7 @@ def export_devices_pdf(container=None):
                     <tr>
                         <td>{{ device.id }}</td>
                         <td>{{ device.customer }}</td>
-                        <td>{{ device.customer_device_id }}</td>
+                        <td><strong>{{ device.customer_device_id }}</strong></td>
                         <td>{{ device.name }}</td>
                         <td>{{ device.type or '-' }}</td>
                         <td>{{ device.serial_number or '-' }}</td>
@@ -229,10 +211,10 @@ def export_devices_pdf(container=None):
         """
         
         # Render HTML mit Jinja2
-        from flask import render_template_string
         html_content = render_template_string(
             html_template,
             devices=devices,
+            device_count=len(devices),
             generated_date=datetime.now().strftime('%d.%m.%Y %H:%M:%S')
         )
         
@@ -252,28 +234,29 @@ def export_devices_pdf(container=None):
         )
         
     except Exception as e:
+        import traceback
         return jsonify({
             'success': False,
-            'error': f'PDF-Generierung fehlgeschlagen: {str(e)}'
+            'error': f'PDF-Generierung fehlgeschlagen: {str(e)}',
+            'details': traceback.format_exc()
         }), 500
 
 
 @pdf_bp.route('/devices/customer/<customer>', methods=['GET'])
-def export_customer_devices_pdf(customer, container=None):
+def export_customer_devices_pdf(customer):
     """
     Exportiere Geräte eines bestimmten Kunden als PDF
     GET /pdf/devices/customer/<customer>
     """
     try:
-        if container is None:
-            from src.config.dependencies import Container
-            container = Container()
+        # Hole den Container aus der App-Konfiguration
+        from src.config.dependencies import container
         
         # Hole alle Geräte
-        all_devices = get_devices_from_container(container)
+        all_devices = container.list_devices_usecase.execute()
         
         # Filtere nach Kundenname
-        devices = [d for d in all_devices if d.customer.lower() == customer.lower()]
+        devices = [d for d in all_devices if d.customer.lower() == customer.lower()] if all_devices else []
         
         # HTML Template für PDF
         html_template = """
@@ -340,16 +323,47 @@ def export_customer_devices_pdf(customer, container=None):
                 td {
                     padding: 8px 10px;
                     border-bottom: 1px solid #ddd;
+                    font-size: 10pt;
                 }
                 
                 tbody tr:nth-child(even) {
                     background-color: #f9f9f9;
                 }
                 
+                .status-active {
+                    color: #28a745;
+                    font-weight: bold;
+                }
+                
+                .status-inactive {
+                    color: #dc3545;
+                    font-weight: bold;
+                }
+                
+                .status-maintenance {
+                    color: #ffc107;
+                    font-weight: bold;
+                }
+                
+                .status-retired {
+                    color: #6c757d;
+                    font-weight: bold;
+                }
+                
                 .empty-message {
                     text-align: center;
                     padding: 40px;
                     color: #999;
+                    font-size: 12pt;
+                }
+                
+                .footer {
+                    margin-top: 30px;
+                    padding-top: 15px;
+                    border-top: 1px solid #ddd;
+                    font-size: 9pt;
+                    color: #999;
+                    text-align: center;
                 }
                 
                 @page {
@@ -361,15 +375,12 @@ def export_customer_devices_pdf(customer, container=None):
         <body>
             <div class="header">
                 <h1>Benning Device Manager</h1>
-                <p>Geräteliste für Kunde: <strong>{{ customer }}</strong></p>
+                <p>Geräteliste - {{ customer }}</p>
             </div>
             
             <div class="metadata">
                 <div>
-                    <strong>Kundenname:</strong> {{ customer }}
-                </div>
-                <div>
-                    <strong>Anzahl Geräte:</strong> {{ devices|length }}
+                    <strong>Gesamtzahl Geräte:</strong> {{ device_count }}
                 </div>
                 <div>
                     <strong>Generiert:</strong> {{ generated_date }}
@@ -380,6 +391,7 @@ def export_customer_devices_pdf(customer, container=None):
             <table>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Geräte-ID</th>
                         <th>Name</th>
                         <th>Typ</th>
@@ -391,12 +403,17 @@ def export_customer_devices_pdf(customer, container=None):
                 <tbody>
                     {% for device in devices %}
                     <tr>
-                        <td>{{ device.customer_device_id }}</td>
+                        <td>{{ device.id }}</td>
+                        <td><strong>{{ device.customer_device_id }}</strong></td>
                         <td>{{ device.name }}</td>
                         <td>{{ device.type or '-' }}</td>
                         <td>{{ device.serial_number or '-' }}</td>
                         <td>{{ device.location or '-' }}</td>
-                        <td>{{ device.status or 'active' }}</td>
+                        <td>
+                            <span class="status-{{ device.status or 'active' }}">
+                                {{ device.status or 'active' }}
+                            </span>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -406,26 +423,30 @@ def export_customer_devices_pdf(customer, container=None):
                 <p>Keine Geräte für diesen Kunden vorhanden</p>
             </div>
             {% endif %}
+            
+            <div class="footer">
+                <p>Benning Device Manager | Geräteliste PDF Export</p>
+            </div>
         </body>
         </html>
         """
         
-        # Render HTML
-        from flask import render_template_string
+        # Render HTML mit Jinja2
         html_content = render_template_string(
             html_template,
-            customer=customer,
             devices=devices,
+            device_count=len(devices),
+            customer=customer,
             generated_date=datetime.now().strftime('%d.%m.%Y %H:%M:%S')
         )
         
-        # Konvertiere zu PDF
+        # Konvertiere HTML zu PDF mit WeasyPrint
         pdf_file = BytesIO()
         HTML(string=html_content).write_pdf(pdf_file)
         pdf_file.seek(0)
         
-        # Sende als Download
-        filename = f"geraete_{customer}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        # Sende PDF als Download
+        filename = f"geraete_liste_{customer}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         
         return send_file(
             pdf_file,
@@ -435,7 +456,9 @@ def export_customer_devices_pdf(customer, container=None):
         )
         
     except Exception as e:
+        import traceback
         return jsonify({
             'success': False,
-            'error': f'PDF-Generierung fehlgeschlagen: {str(e)}'
+            'error': f'PDF-Generierung fehlgeschlagen: {str(e)}',
+            'details': traceback.format_exc()
         }), 500

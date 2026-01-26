@@ -1,4 +1,6 @@
-
+"""
+Benning Device Manager - Main Application
+"""
 import sys
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -14,6 +16,14 @@ from src.config.dependencies import container
 from src.adapters.web.routes.device_routes import device_bp
 from src.adapters.services.qr_code_generator import QRCodeGenerator
 
+# ✅ IMPORT PDF BLUEPRINT
+try:
+    from src.adapters.web.routes.pdf_export_route import pdf_bp
+    PDF_ENABLED = True
+except ImportError as e:
+    print(f"⚠️  Warning: PDF export nicht verfügbar: {e}")
+    PDF_ENABLED = False
+
 def create_app():
     app = Flask(__name__, 
                 template_folder=str(Path(__file__).parent.parent / 'templates'),
@@ -21,7 +31,17 @@ def create_app():
     
     config = get_config()
     app.config.from_object(config)
+    
+    # Register Blueprints
     app.register_blueprint(device_bp)
+    
+    # ✅ REGISTER PDF BLUEPRINT (SICHER)
+    if PDF_ENABLED:
+        try:
+            app.register_blueprint(pdf_bp)
+            print("✅ PDF Export Routes registriert")
+        except Exception as e:
+            print(f"⚠️  Fehler beim Registrieren von PDF Routes: {e}")
 
     # ========================================================================
     # DASHBOARD - INDEX
@@ -109,147 +129,81 @@ def create_app():
             return render_template('devices.html', devices=[], error=str(e))
 
     # ========================================================================
-    # GERÄTEDETAILS
-    # ========================================================================
-    @app.route('/device/<int:device_id>')
-    def device_detail(device_id):
-        """Gerätedetails mit QR-Code"""
-        try:
-            device = container.device_repository.get_by_id(device_id)
-            if device:
-                # Generiere QR-Code
-                qr_code_data = QRCodeGenerator.generate_qr_code(
-                    device_id=device.customer_device_id,
-                    customer=device.customer
-                )
-                if qr_code_data:
-                    device.qr_code = f"data:image/svg+xml;base64,{qr_code_data.decode('utf-8')}"
-                else:
-                    device.qr_code = None
-                
-                # Hole Inspektionen (placeholder)
-                inspections = []
-                return render_template('device_detail.html', device=device, inspections=inspections)
-            else:
-                return render_template('error.html', error='Device nicht gefunden'), 404
-        except Exception as e:
-            return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
     # SCHNELLERFASSUNG
     # ========================================================================
     @app.route('/quick-add', methods=['GET', 'POST'])
     def quick_add():
         """Schnellerfassung für neue Geräte"""
-        if request.method == 'POST':
-            return jsonify({'status': 'success'})
+        if request.method == 'GET':
+            return render_template('quick_add.html')
         
+        # POST request handling
         try:
-            # Hole nächste ID für Standard-Kunden
-            next_id = container.device_repository.get_next_customer_device_id('Default')
-            return render_template('quick_add.html', next_id=next_id)
+            data = request.json or {}
+            
+            # Validiere erforderliche Felder
+            if not data.get('customer'):
+                return jsonify({'success': False, 'error': 'Kundenname erforderlich'}), 400
+            if not data.get('name'):
+                return jsonify({'success': False, 'error': 'Gerätename erforderlich'}), 400
+            if not data.get('type'):
+                return jsonify({'success': False, 'error': 'Gerätetyp erforderlich'}), 400
+            
+            # Erstelle Gerät
+            from src.core.domain.device import Device
+            device = Device(
+                customer=data.get('customer'),
+                name=data.get('name'),
+                type=data.get('type'),
+                location=data.get('location'),
+                manufacturer=data.get('manufacturer'),
+                serial_number=data.get('serial_number') or None,
+                purchase_date=data.get('purchase_date') or None,
+                notes=data.get('notes')
+            )
+            
+            created = container.create_device_usecase.execute(device)
+            return jsonify({
+                'success': True,
+                'device': {
+                    'id': created.id,
+                    'customer_device_id': created.customer_device_id,
+                    'customer': created.customer,
+                    'name': created.name,
+                    'type': created.type
+                },
+                'message': 'Gerät erfolgreich erstellt'
+            }), 201
         except Exception as e:
-            return render_template('quick_add.html', next_id='Default-00001', error=str(e))
+            return jsonify({'success': False, 'error': str(e)}), 500
 
     # ========================================================================
-    # USB-C INSPEKTIONEN LISTE
+    # USB-C PRÜFUNGEN
     # ========================================================================
     @app.route('/usbc-inspections')
     def usbc_inspections():
         """USB-C Inspektionen Übersicht"""
         try:
-            # Placeholder: Später mit echten Inspektionsdaten
-            inspections = []
-            return render_template('usbc_inspections_list.html', inspections=inspections)
+            devices_list = container.list_devices_usecase.execute()
+            return render_template('usbc_inspections_list.html', devices=devices_list)
         except Exception as e:
-            return render_template('usbc_inspections_list.html', inspections=[], error=str(e))
-
-    # ========================================================================
-    # USB-C INSPEKTIONEN DETAIL (ALT)
-    # ========================================================================
-    @app.route('/usbc-inspection/<int:inspection_id>')
-    def usbc_inspection_detail(inspection_id):
-        """USB-C Inspektionsdetails"""
-        try:
-            # Placeholder: Später mit echten Inspektionsdaten
-            inspection = {}
-            device = {}
-            return render_template('usbc_inspection.html', inspection=inspection, device=device)
-        except Exception as e:
-            return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
-    # USB-C INSPEKTIONEN FÜR SPEZIFISCHES GERÄT - NEU
-    # ========================================================================
-    @app.route('/device/<int:device_id>/usbc-inspection', methods=['GET', 'POST'])
-    def device_usbc_inspection(device_id):
-        """USB-C Inspektionsformular für ein spezifisches Gerät"""
-        try:
-            device = container.device_repository.get_by_id(device_id)
-            if device:
-                if request.method == 'POST':
-                    # TODO: Speichere Inspektionsdaten
-                    # Später: Verwende container.create_inspection_usecase.execute(inspection)
-                    return jsonify({
-                        'status': 'success',
-                        'message': 'Inspektion gespeichert',
-                        'device_id': device_id
-                    }), 201
-                
-                return render_template('usbc_inspection.html', device=device)
-            else:
-                return render_template('error.html', error='Device nicht gefunden'), 404
-        except Exception as e:
-            print(f"Error in device_usbc_inspection: {e}")
-            return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
-    # USB-C INSPEKTIONEN DETAIL FÜR SPEZIFISCHES GERÄT - NEU
-    # ========================================================================
-    @app.route('/device/<int:device_id>/usbc-inspection/<int:inspection_id>')
-    def device_usbc_inspection_detail(device_id, inspection_id):
-        """USB-C Inspektionsdetails für ein spezifisches Gerät"""
-        try:
-            device = container.device_repository.get_by_id(device_id)
-            if device:
-                # TODO: Hole Inspektionsdaten
-                # Später: inspection = container.get_inspection_usecase.execute(inspection_id)
-                inspection = {}
-                return render_template('usbc_inspection_detail.html', device=device, inspection=inspection)
-            else:
-                return render_template('error.html', error='Device nicht gefunden'), 404
-        except Exception as e:
-            print(f"Error in device_usbc_inspection_detail: {e}")
-            return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
-    # HEALTH CHECK ENDPOINTS
-    # ========================================================================
-    @app.route('/health', methods=['GET'])
-    def health():
-        """Health Check"""
-        return {'status': 'ok'}, 200
-
-    @app.route('/api/health', methods=['GET'])
-    def api_health():
-        """API Health Check"""
-        return {'status': 'ok'}, 200
+            print(f"Error loading inspections: {e}")
+            return render_template('usbc_inspections_list.html', devices=[], error=str(e))
 
     # ========================================================================
     # ERROR HANDLERS
     # ========================================================================
     @app.errorhandler(404)
     def not_found(error):
-        """404 Error Handler"""
         return render_template('error.html', error='Seite nicht gefunden'), 404
 
     @app.errorhandler(500)
-    def server_error(error):
-        """500 Error Handler"""
-        return render_template('error.html', error='Server-Fehler'), 500
+    def internal_error(error):
+        return render_template('error.html', error='Interner Fehler'), 500
 
     return app
 
+
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)

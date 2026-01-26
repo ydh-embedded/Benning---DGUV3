@@ -116,6 +116,12 @@ def create_device():
                 'errors': errors
             }), 400
         
+        # Generiere customer_device_id automatisch wenn nicht vorhanden
+        if not create_request.customer_device_id:
+            # Hole die nächste ID für diesen Kunden
+            next_id_response = container.device_repository.get_next_customer_device_id(create_request.customer)
+            create_request.customer_device_id = next_id_response
+        
         device = Device(
             customer=create_request.customer,
             customer_device_id=create_request.customer_device_id,

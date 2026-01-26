@@ -24,7 +24,7 @@ class CreateDeviceRequest:
     customer: str
     name: str
     type: str  # ✅ FIX: Mache erforderlich (war Optional)
-    customer_device_id: Optional[str] = None
+    customer_device_id: Optional[str] = None  # ✅ Optional - wird nach dem Speichern generiert
     serial_number: Optional[str] = None
     manufacturer: Optional[str] = None
     location: Optional[str] = None
@@ -87,34 +87,11 @@ class CreateDeviceRequest:
                 except (ValueError, AttributeError, TypeError) as e:
                     errors.append(f"purchase_date must be in ISO format (YYYY-MM-DD), got '{self.purchase_date}'")
         
-        # customer_device_id Format Validierung (sollte Format "Customer-00001" haben)
-        if self.customer_device_id:
-            if not self._validate_customer_device_id_format(self.customer_device_id):
-                errors.append(f"customer_device_id format invalid: '{self.customer_device_id}' (expected 'Customer-00001')")
+        # customer_device_id wird nach dem Speichern automatisch generiert, daher keine Validierung nötig
         
         return errors
     
-    @staticmethod
-    def _validate_customer_device_id_format(customer_device_id: str) -> bool:
-        """Validiere customer_device_id Format"""
-        if not customer_device_id or '-' not in customer_device_id:
-            return False
-        
-        parts = customer_device_id.split('-')
-        if len(parts) != 2:
-            return False
-        
-        customer_part, id_part = parts
-        
-        # Customer-Teil sollte nicht leer sein
-        if not customer_part:
-            return False
-        
-        # ID-Teil sollte numerisch und 5 Ziffern sein
-        if not id_part.isdigit() or len(id_part) != 5:
-            return False
-        
-        return True
+
     
     def sanitize(self):
         """Sanitize string fields"""

@@ -136,7 +136,7 @@ def create_app():
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================
-    # SCHNELLERFASSUNG - KORRIGIERTE VERSION
+    # SCHNELLERFASSUNG - KORRIGIERTE VERSION MIT DATENBANKOPERATION
     # ========================================================================
     @app.route('/quick-add', methods=['GET', 'POST'])
     def quick_add():
@@ -176,7 +176,7 @@ def create_app():
                     notes=notes
                 )
                 
-                # 4. Rufe CreateDeviceUseCase auf
+                # 4. Rufe CreateDeviceUseCase auf - DIES IST DER WICHTIGE TEIL!
                 created_device = container.create_device_usecase.execute(device)
                 
                 # 5. Gebe Erfolg zurück
@@ -191,6 +191,8 @@ def create_app():
                 return jsonify({'status': 'error', 'message': f'Validierungsfehler: {str(ve)}'}), 400
             except Exception as e:
                 print(f"Error creating device: {e}")
+                import traceback
+                traceback.print_exc()
                 return jsonify({'status': 'error', 'message': f'Fehler beim Speichern: {str(e)}'}), 500
         
         try:

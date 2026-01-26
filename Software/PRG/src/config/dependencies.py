@@ -74,6 +74,8 @@ class Container:
         
         self.logger.info("All use cases initialized successfully")
 
+        # In der dependencies.py Datei sollte folgende Zeile existieren:
+        self.container.create_device_usecase = CreateDeviceUseCase(container.device_repository)
 
 # Create singleton container instance (nur einmal!)
 container = Container()

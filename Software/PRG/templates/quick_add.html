@@ -58,6 +58,34 @@
             <input type="date" name="purchase_date">
         </div>
         
+        <div class="form-section">
+            <h3>📋 Prüfinformationen</h3>
+            
+            <div class="form-group">
+                <label>Prüfdatum: *</label>
+                <input type="date" name="last_inspection" id="inspectionDate" required>
+                <small>Standardmäßig auf heute gesetzt</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Prüfstatus: *</label>
+                <select name="status" id="pruefsStatus" required>
+                    <option value="">-- Bitte wählen --</option>
+                    <option value="active">✅ Aktiv (bestanden)</option>
+                    <option value="false">❌ Nicht bestanden</option>
+                    <option value="lost">🔴 Verloren</option>
+                </select>
+                <small>Status der letzten Prüfung</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Nächste Prüfung:</label>
+                <input type="date" name="next_inspection" id="nextInspectionDate">
+                <small>Wird automatisch berechnet (12 Monate nach Prüfdatum)</small>
+            </div>
+        </div>
+
+        
         <div class="form-group">
             <label>Notizen:</label>
             <textarea name="notes" rows="3"></textarea>

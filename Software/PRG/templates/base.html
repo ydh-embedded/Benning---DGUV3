@@ -5,216 +5,346 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Benning Device Manager{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* Benning Device Manager - Dark Rose-Gold Theme */
+
         :root {
-            --primary-color: #1a1a2e;
-            --secondary-color: #f0a500;
-            --accent-color: #e94560;
-            --light-bg: #16213e;
+            --bg-primary: #1a1625;
+            --bg-secondary: #251d32;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #e8d4d0;
+            --text-secondary: #b8a8a4;
+            --accent-rose: #d4a5a5;
+            --accent-gold: #d4af37;
+            --gradient-primary: linear-gradient(135deg, #d4a5a5 0%, #d4af37 100%);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --border-radius: 12px;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            background-color: #0f3460;
-            color: #ecf0f1;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
         }
-        
-        /* Header/Navigation Styling */
+
+        /* Navigation */
         .navbar {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--light-bg) 100%);
-            border-bottom: 3px solid var(--secondary-color);
+            background: var(--bg-secondary);
             padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
-        .navbar-brand {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--secondary-color) !important;
+
+        .nav-brand h1 {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        
-        .navbar-brand i {
-            font-size: 2rem;
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
         }
-        
-        .nav-link {
-            color: #ecf0f1 !important;
-            margin: 0 0.5rem;
-            padding: 0.5rem 1rem !important;
-            border-radius: 0.25rem;
-            transition: all 0.3s ease;
-            font-weight: 500;
+
+        .nav-menu a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
         }
-        
-        .nav-link:hover {
-            background-color: var(--secondary-color);
-            color: var(--primary-color) !important;
+
+        .nav-menu a:hover {
+            color: var(--accent-rose);
+            background: rgba(212, 165, 165, 0.1);
         }
-        
-        .nav-link.active {
-            background-color: var(--secondary-color);
-            color: var(--primary-color) !important;
-            border-bottom: 2px solid var(--accent-color);
+
+        .nav-menu a.active {
+            color: var(--accent-gold);
+            background: rgba(212, 165, 165, 0.2);
+            border-bottom: 2px solid var(--accent-rose);
         }
-        
+
         /* Container */
         .container {
             max-width: 1400px;
             margin: 2rem auto;
-            padding: 0 1rem;
+            padding: 0 2rem;
         }
-        
+
+        /* Cards */
+        .stat-card, .detail-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 165, 165, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card h3 {
+            font-size: 3rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card.warning h3 {
+            color: #ff6b6b;
+        }
+
+        /* Tables */
+        .device-table {
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .device-table thead {
+            background: var(--gradient-primary);
+        }
+
+        .device-table th {
+            padding: 1rem;
+            text-align: left;
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .device-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(212, 165, 165, 0.1);
+        }
+
+        .device-table tbody tr:hover {
+            background: rgba(212, 165, 165, 0.1);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--accent-rose);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(212, 165, 165, 0.3);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-rose);
+            box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.1);
+        }
+
+        /* Buttons */
+        .btn-primary, .btn-secondary, .btn-small, .btn-print, .btn-danger {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: var(--bg-primary);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 165, 165, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--accent-rose);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-print {
+            background: #27ae60;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-print:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .badge-passed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .badge-failed {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            border: 1px solid #4caf50;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid #f44336;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            margin-top: 4rem;
+            border-top: 1px solid rgba(212, 165, 165, 0.2);
+        }
+
+        /* Detail Grid */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .detail-card dl {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 0.5rem;
+        }
+
+        .detail-card dt {
+            color: var(--accent-rose);
+            font-weight: 500;
+        }
+
+        .detail-card dd {
+            color: var(--text-primary);
+        }
+
+        /* QR Section */
+        .qr-section {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .qr-section img {
+            border: 2px solid var(--accent-rose);
+            border-radius: 8px;
+            padding: 0.5rem;
+            background: white;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            margin-bottom: 1.5rem;
+        }
+
         /* Main Content */
         main {
             min-height: calc(100vh - 200px);
             padding: 2rem 0;
         }
-        
-        /* Footer */
-        footer {
-            background-color: var(--primary-color);
-            border-top: 2px solid var(--secondary-color);
-            padding: 2rem;
-            margin-top: 3rem;
-            text-align: center;
-            color: #95a5a6;
-        }
-        
-        /* Buttons */
-        .btn-primary {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .btn-primary:hover {
-            background-color: #e89500;
-            border-color: #e89500;
-        }
-        
-        .btn-danger {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-        
-        .btn-danger:hover {
-            background-color: #d63447;
-            border-color: #d63447;
-        }
-        
-        /* Print Button */
-        .btn-print {
-            background-color: #27ae60;
-            border-color: #27ae60;
-            color: white;
-        }
-        
-        .btn-print:hover {
-            background-color: #229954;
-            border-color: #229954;
-        }
-        
-        /* Tables */
-        .table {
-            background-color: var(--light-bg);
-            color: #ecf0f1;
-            border-color: #34495e;
-        }
-        
-        .table-hover tbody tr:hover {
-            background-color: #1a3a52;
-        }
-        
-        .table thead {
-            background-color: var(--primary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        .table th {
-            color: var(--secondary-color);
-            font-weight: 600;
-            border-color: var(--secondary-color);
-        }
-        
-        /* Alerts */
-        .alert {
-            border-radius: 0.5rem;
-        }
-        
-        .alert-info {
-            background-color: #3498db;
-            border-color: #2980b9;
-            color: white;
-        }
-        
-        .alert-warning {
-            background-color: #f39c12;
-            border-color: #d68910;
-            color: white;
-        }
-        
-        .alert-danger {
-            background-color: var(--accent-color);
-            border-color: #c0392b;
-            color: white;
-        }
-        
-        .alert-success {
-            background-color: #27ae60;
-            border-color: #1e8449;
-            color: white;
-        }
-        
-        /* Forms */
-        .form-control, .form-select {
-            background-color: var(--light-bg);
-            border-color: #34495e;
-            color: #ecf0f1;
-        }
-        
-        .form-control:focus, .form-select:focus {
-            background-color: var(--light-bg);
-            border-color: var(--secondary-color);
-            color: #ecf0f1;
-            box-shadow: 0 0 0 0.2rem rgba(240, 165, 0, 0.25);
-        }
-        
-        .form-label {
-            color: #ecf0f1;
-            font-weight: 500;
-        }
-        
-        /* Cards */
-        .card {
-            background-color: var(--light-bg);
-            border-color: #34495e;
-            color: #ecf0f1;
-        }
-        
-        .card-header {
-            background-color: var(--primary-color);
-            border-color: var(--secondary-color);
-        }
-        
+
         /* Print Styles */
         @media print {
-            .navbar, footer, .btn-print, .btn-primary, .btn-danger {
+            .navbar, footer, .btn, .toolbar, .form-group {
                 display: none !important;
             }
             
@@ -223,33 +353,55 @@
                 color: black;
             }
             
-            .table {
+            .device-table {
                 background-color: white;
                 color: black;
             }
             
-            .table th {
+            .device-table thead {
                 background-color: #f0f0f0;
+            }
+            
+            .device-table th {
                 color: black;
+            }
+            
+            .device-table td {
+                color: black;
+                border-color: #ddd;
             }
             
             .container {
                 max-width: 100%;
+                margin: 0;
+                padding: 0;
             }
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .navbar {
-                padding: 0.5rem 1rem;
+                flex-direction: column;
+                gap: 1rem;
             }
             
-            .navbar-brand {
-                font-size: 1.3rem;
+            .nav-menu {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
             }
             
-            .nav-link {
-                margin: 0.25rem 0;
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .device-table {
+                font-size: 0.875rem;
+            }
+            
+            .device-table th,
+            .device-table td {
+                padding: 0.5rem;
             }
         }
     </style>
@@ -258,52 +410,36 @@
 </head>
 <body>
     <!-- Navigation Header -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
-            <!-- Brand -->
-            <a class="navbar-brand" href="/">
+    <nav class="navbar">
+        <div class="nav-brand">
+            <h1>
                 <i class="fas fa-tools"></i>
                 Benning Device Manager
-            </a>
-            
-            <!-- Toggle Button (Mobile) -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <!-- Navigation Links -->
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <!-- Dashboard -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                    </li>
-                    
-                    <!-- Schnellerfassung -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/quick-add' %}active{% endif %}" href="/quick-add">
-                            <i class="fas fa-plus-circle"></i> Schnellerfassung
-                        </a>
-                    </li>
-                    
-                    <!-- Geräteliste -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/devices' %}active{% endif %}" href="/devices">
-                            <i class="fas fa-list"></i> Geräteliste
-                        </a>
-                    </li>
-                    
-                    <!-- USB-C Prüfungen -->
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/usbc-inspections' %}active{% endif %}" href="/usbc-inspections">
-                            <i class="fas fa-check-circle"></i> USB-C Prüfungen
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            </h1>
         </div>
+        
+        <ul class="nav-menu">
+            <li>
+                <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="/quick-add" class="{% if request.path == '/quick-add' %}active{% endif %}">
+                    <i class="fas fa-plus-circle"></i> Schnellerfassung
+                </a>
+            </li>
+            <li>
+                <a href="/devices" class="{% if request.path == '/devices' %}active{% endif %}">
+                    <i class="fas fa-list"></i> Geräteliste
+                </a>
+            </li>
+            <li>
+                <a href="/usbc-inspections" class="{% if request.path == '/usbc-inspections' %}active{% endif %}">
+                    <i class="fas fa-check-circle"></i> USB-C Prüfungen
+                </a>
+            </li>
+        </ul>
     </nav>
     
     <!-- Main Content -->
@@ -317,9 +453,6 @@
     <footer>
         <p>&copy; 2026 Benning Device Manager | USB-C Kabel-Prüfung</p>
     </footer>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Print Function -->
     <script>

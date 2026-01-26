@@ -1,5 +1,5 @@
 """
-Device DTOs (Data Transfer Objects) für Request/Response Validierung
+Device DTOs (Data Transfer Objects) für Request/Response Validierung - KORRIGIERTE VERSION
 Behebt varchar/string ID-Probleme durch explizite Validierung
 """
 
@@ -23,7 +23,7 @@ class CreateDeviceRequest:
     
     customer: str
     name: str
-    type: Optional[str] = None
+    type: str  # ✅ FIX: Mache erforderlich (war Optional)
     customer_device_id: Optional[str] = None
     serial_number: Optional[str] = None
     manufacturer: Optional[str] = None
@@ -43,12 +43,19 @@ class CreateDeviceRequest:
         if not self.name or not self.name.strip():
             errors.append("name is required and cannot be empty")
         
+        # ✅ FIX: Validiere type als erforderlich
+        if not self.type or not self.type.strip():
+            errors.append("type is required and cannot be empty")
+        
         # Längenbeschränkungen (VARCHAR(255))
         if self.customer and len(self.customer) > 255:
             errors.append(f"customer must not exceed 255 characters (got {len(self.customer)})")
         
         if self.name and len(self.name) > 255:
             errors.append(f"name must not exceed 255 characters (got {len(self.name)})")
+        
+        if self.type and len(self.type) > 255:
+            errors.append(f"type must not exceed 255 characters (got {len(self.type)})")
         
         if self.customer_device_id and len(self.customer_device_id) > 255:
             errors.append(f"customer_device_id must not exceed 255 characters (got {len(self.customer_device_id)})")
@@ -62,18 +69,23 @@ class CreateDeviceRequest:
         if self.location and len(self.location) > 255:
             errors.append(f"location must not exceed 255 characters (got {len(self.location)})")
         
+        # ✅ FIX: Validiere notes Längenbeschränkung
+        if self.notes and len(self.notes) > 1000:
+            errors.append(f"notes must not exceed 1000 characters (got {len(self.notes)})")
+        
         # Status Validierung
         valid_statuses = [s.value for s in DeviceStatus]
         if self.status not in valid_statuses:
             errors.append(f"status must be one of {valid_statuses}, got '{self.status}'")
         
-        # Datums-Validierung
+        # ✅ FIX: Bessere Datums-Validierung
         if self.purchase_date:
-            try:
-                if self.purchase_date.strip():  # Nur wenn nicht leer
-                    date.fromisoformat(self.purchase_date)
-            except (ValueError, AttributeError):
-                errors.append(f"purchase_date must be in ISO format (YYYY-MM-DD), got '{self.purchase_date}'")
+            purchase_date_str = self.purchase_date.strip() if isinstance(self.purchase_date, str) else str(self.purchase_date)
+            if purchase_date_str:  # Nur wenn nicht leer nach Strip
+                try:
+                    date.fromisoformat(purchase_date_str)
+                except (ValueError, AttributeError, TypeError) as e:
+                    errors.append(f"purchase_date must be in ISO format (YYYY-MM-DD), got '{self.purchase_date}'")
         
         # customer_device_id Format Validierung (sollte Format "Customer-00001" haben)
         if self.customer_device_id:
@@ -107,21 +119,39 @@ class CreateDeviceRequest:
     def sanitize(self):
         """Sanitize string fields"""
         if self.customer:
-            self.customer = self.customer.strip()
+            self.customer = self.customer.strip() if self.customer else None
         if self.name:
-            self.name = self.name.strip()
+            self.name = self.name.strip() if self.name else None
+        if self.type:
+            self.type = self.type.strip() if self.type else None
         if self.customer_device_id:
-            self.customer_device_id = self.customer_device_id.strip()
-        if self.serial_number:
+            self.customer_device_id = self.customer_device_id.strip() if self.customer_device_id else None
+        
+        # ✅ FIX: Explizite Behandlung von leeren Strings für optional fields
+        if self.serial_number == "":
+            self.serial_number = None
+        elif self.serial_number:
             self.serial_number = self.serial_number.strip()
-        if self.manufacturer:
+        
+        if self.manufacturer == "":
+            self.manufacturer = None
+        elif self.manufacturer:
             self.manufacturer = self.manufacturer.strip()
-        if self.location:
+        
+        if self.location == "":
+            self.location = None
+        elif self.location:
             self.location = self.location.strip()
-        if self.notes:
+        
+        if self.purchase_date == "":
+            self.purchase_date = None
+        elif self.purchase_date:
+            self.purchase_date = self.purchase_date.strip()
+        
+        if self.notes == "":
+            self.notes = None
+        elif self.notes:
             self.notes = self.notes.strip()
-        if self.purchase_date:
-            self.purchase_date = self.purchase_date.strip() if self.purchase_date else None
 
 
 @dataclass
@@ -149,6 +179,9 @@ class UpdateDeviceRequest:
         if self.name and len(self.name) > 255:
             errors.append(f"name must not exceed 255 characters")
         
+        if self.type and len(self.type) > 255:
+            errors.append(f"type must not exceed 255 characters")
+        
         if self.serial_number and len(self.serial_number) > 255:
             errors.append(f"serial_number must not exceed 255 characters")
         
@@ -158,38 +191,61 @@ class UpdateDeviceRequest:
         if self.location and len(self.location) > 255:
             errors.append(f"location must not exceed 255 characters")
         
+        # ✅ FIX: Validiere notes Längenbeschränkung
+        if self.notes and len(self.notes) > 1000:
+            errors.append(f"notes must not exceed 1000 characters")
+        
         # Status Validierung
         if self.status:
             valid_statuses = [s.value for s in DeviceStatus]
             if self.status not in valid_statuses:
                 errors.append(f"status must be one of {valid_statuses}")
         
-        # Datums-Validierung
+        # ✅ FIX: Bessere Datums-Validierung
         if self.purchase_date:
-            try:
-                if self.purchase_date.strip():
-                    date.fromisoformat(self.purchase_date)
-            except (ValueError, AttributeError):
-                errors.append(f"purchase_date must be in ISO format (YYYY-MM-DD)")
+            purchase_date_str = self.purchase_date.strip() if isinstance(self.purchase_date, str) else str(self.purchase_date)
+            if purchase_date_str:
+                try:
+                    date.fromisoformat(purchase_date_str)
+                except (ValueError, AttributeError, TypeError) as e:
+                    errors.append(f"purchase_date must be in ISO format (YYYY-MM-DD)")
         
         return errors
     
     def sanitize(self):
         """Sanitize string fields"""
         if self.customer:
-            self.customer = self.customer.strip()
+            self.customer = self.customer.strip() if self.customer else None
         if self.name:
-            self.name = self.name.strip()
-        if self.serial_number:
+            self.name = self.name.strip() if self.name else None
+        if self.type:
+            self.type = self.type.strip() if self.type else None
+        
+        # ✅ FIX: Explizite Behandlung von leeren Strings
+        if self.serial_number == "":
+            self.serial_number = None
+        elif self.serial_number:
             self.serial_number = self.serial_number.strip()
-        if self.manufacturer:
+        
+        if self.manufacturer == "":
+            self.manufacturer = None
+        elif self.manufacturer:
             self.manufacturer = self.manufacturer.strip()
-        if self.location:
+        
+        if self.location == "":
+            self.location = None
+        elif self.location:
             self.location = self.location.strip()
-        if self.notes:
+        
+        if self.purchase_date == "":
+            self.purchase_date = None
+        elif self.purchase_date:
+            self.purchase_date = self.purchase_date.strip()
+        
+        if self.notes == "":
+            self.notes = None
+        elif self.notes:
             self.notes = self.notes.strip()
-        if self.purchase_date:
-            self.purchase_date = self.purchase_date.strip() if self.purchase_date else None
 
 
 @dataclass
@@ -240,7 +296,7 @@ def create_device_request_from_json(data: dict) -> tuple[CreateDeviceRequest, li
         request = CreateDeviceRequest(
             customer=data.get('customer', ''),
             name=data.get('name', ''),
-            type=data.get('type'),
+            type=data.get('type', ''),  # ✅ FIX: Mache erforderlich
             customer_device_id=data.get('customer_device_id'),
             serial_number=data.get('serial_number'),
             manufacturer=data.get('manufacturer'),

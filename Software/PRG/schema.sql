@@ -14,8 +14,8 @@ USE benning_device_manager;
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS devices (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    customer VARCHAR(255) NOT NULL COMMENT 'Kundenname für ID-Format',
-    device_id VARCHAR(255) UNIQUE NOT NULL COMMENT 'Formatierte ID: Kunde-00001',
+    customer VARCHAR(255) NOT NULL COMMENT 'Kundenname',
+    customer_device_id VARCHAR(255) UNIQUE NOT NULL COMMENT 'Formatierte Kunden-ID: Kunde-00001',
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
     serial_number VARCHAR(255) UNIQUE,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS devices (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_customer (customer),
-    INDEX idx_device_id (device_id),
+    INDEX idx_customer_device_id (customer_device_id),
     INDEX idx_name (name),
     INDEX idx_serial (serial_number),
     INDEX idx_status (status),

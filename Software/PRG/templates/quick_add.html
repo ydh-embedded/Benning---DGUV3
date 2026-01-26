@@ -71,7 +71,7 @@
                 <label>Prüfstatus: *</label>
                 <select name="status" id="pruefsStatus" required>
                     <option value="">-- Bitte wählen --</option>
-                    <option value="active">✅ Aktiv (bestanden)</option>
+                    <option value="active">✅ Bestanden</option>
                     <option value="false">❌ Nicht bestanden</option>
                     <option value="lost">🔴 Verloren</option>
                 </select>
@@ -101,13 +101,20 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 
 <script>
 // Setze Prüfdatum auf heute
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('inspectionDate').value = today;
+    
+    // Berechne auch nächste Prüfung initial
+    const inspectionDate = new Date(today);
+    const nextInspection = new Date(inspectionDate);
+    nextInspection.setFullYear(nextInspection.getFullYear() + 1);
+    const nextInspectionStr = nextInspection.toISOString().split('T')[0];
+    document.getElementById('nextInspectionDate').value = nextInspectionStr;
 });
 
 // Berechne nächste Prüfung (12 Monate später)
@@ -121,7 +128,7 @@ document.getElementById('inspectionDate').addEventListener('change', (e) => {
 
 // Zur Liste Button
 document.getElementById('backBtn').addEventListener('click', () => {
-    window.location.href = '/devices';
+    window.location.href = '{{ url_for("devices") }}';
 });
 
 // Generiere Device ID bei Kunde Eingabe
@@ -178,6 +185,13 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('inspectionDate').value = today;
             
+            // Berechne nächste Prüfung
+            const inspectionDate = new Date(today);
+            const nextInspection = new Date(inspectionDate);
+            nextInspection.setFullYear(nextInspection.getFullYear() + 1);
+            const nextInspectionStr = nextInspection.toISOString().split('T')[0];
+            document.getElementById('nextInspectionDate').value = nextInspectionStr;
+            
             const customer = data.customer;
             const response2 = await fetch(`/api/devices/next-id?customer=${encodeURIComponent(customer)}`);
             const result2 = await response2.json();
@@ -196,98 +210,9 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
     } catch (error) {
         document.getElementById('message').innerHTML = '❌ Fehler: ' + error.message;
         document.getElementById('message').className = 'message error';
+        console.error('Fehler beim Speichern:', error);
     }
 });
 </script>
 
-
-
-
-
-
-<script>
-
-
-
-// Zur Liste Button
-document.getElementById('backBtn').addEventListener('click', () => {
-    window.location.href = '/devices';
-});
-
-// Generiere Device ID bei Kunde Eingabe
-document.getElementById('customerInput').addEventListener('change', async (e) => {
-    const customer = e.target.value.trim();
-    
-    if (!customer) {
-        document.getElementById('deviceId').value = '';
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/devices/next-id?customer=${encodeURIComponent(customer)}`);
-        const result = await response.json();
-        
-        if (result.success) {
-            document.getElementById('deviceId').value = result.next_id;
-        }
-    } catch (error) {
-        console.error('Fehler:', error);
-    }
-});
-
-// Form Submit
-document.getElementById('quickAddForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
-    
-    try {
-        const response = await fetch('/api/devices', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            document.getElementById('message').innerHTML = '✅ Gerät erfolgreich gespeichert!';
-            document.getElementById('message').className = 'message success';
-            
-            // Wenn USB-Kabel, zur USB-C Inspection leiten
-            if (data.type === 'USB-Kabel') {
-                setTimeout(() => {
-                    window.location.href = `/device/${result.device.id}/usbc-inspection`;
-                }, 1000);
-                return;
-            }
-            
-            // Formular zurücksetzen
-            e.target.reset();
-            
-            // Generiere neue ID für nächstes Gerät
-            const customer = data.customer;
-            const response2 = await fetch(`/api/devices/next-id?customer=${encodeURIComponent(customer)}`);
-            const result2 = await response2.json();
-            
-            if (result2.success) {
-                document.getElementById('deviceId').value = result2.next_id;
-            }
-            
-            // Fokus auf Name-Feld
-            document.querySelector('input[name="name"]').focus();
-            
-            setTimeout(() => {
-                document.getElementById('message').innerHTML = '';
-            }, 3000);
-        } else {
-            throw new Error(result.error);
-        }
-    } catch (error) {
-        document.getElementById('message').innerHTML = '❌ Fehler: ' + error.message;
-        document.getElementById('message').className = 'message error';
-    }
-});
-</script>
 {% endblock %}

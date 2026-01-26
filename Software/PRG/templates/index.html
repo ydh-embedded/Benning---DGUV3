@@ -28,7 +28,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <h3 style="color: #4caf50;">{{ active_devices }}</h3>
-                <p style="color: var(--text-secondary);">Aktive Geräte</p>
+                <p style="color: var(--text-secondary);">Bestandene Geräte</p>
             </div>
             <i class="fas fa-check-circle" style="font-size: 2rem; color: #4caf50; opacity: 0.3;"></i>
         </div>
@@ -72,7 +72,7 @@
             <p style="color: var(--text-secondary); margin-top: 0.5rem;">
                 Erfassen Sie schnell ein neues Gerät
             </p>
-            <a href="/quick-add" class="btn-primary" style="margin-top: 1rem;">
+            <a href="{{ url_for('quick_add') }}" class="btn-primary" style="margin-top: 1rem;">
                 <i class="fas fa-arrow-right"></i> Zur Erfassung
             </a>
         </div>
@@ -87,7 +87,7 @@
             <p style="color: var(--text-secondary); margin-top: 0.5rem;">
                 Alle erfassten Geräte anzeigen und verwalten
             </p>
-            <a href="/devices" class="btn-primary" style="margin-top: 1rem;">
+            <a href="{{ url_for('devices') }}" class="btn-primary" style="margin-top: 1rem;">
                 <i class="fas fa-arrow-right"></i> Zur Liste
             </a>
         </div>
@@ -102,7 +102,7 @@
             <p style="color: var(--text-secondary); margin-top: 0.5rem;">
                 Prüfungen durchführen und verwalten
             </p>
-            <a href="/usbc-inspections" class="btn-primary" style="margin-top: 1rem;">
+            <a href="{{ url_for('usbc_inspections') }}" class="btn-primary" style="margin-top: 1rem;">
                 <i class="fas fa-arrow-right"></i> Zu den Prüfungen
             </a>
         </div>
@@ -138,7 +138,7 @@
                 <td>{{ device.type }}</td>
                 <td>
                     {% if device.status == 'active' %}
-                        <span class="badge badge-active"><i class="fas fa-check-circle"></i> Aktiv</span>
+                        <span class="badge badge-active"><i class="fas fa-check-circle"></i> Bestanden</span>
                     {% elif device.status == 'inactive' %}
                         <span class="badge" style="background: rgba(158, 158, 158, 0.2); color: #9e9e9e;"><i class="fas fa-pause-circle"></i> Inaktiv</span>
                     {% elif device.status == 'maintenance' %}
@@ -150,7 +150,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="/device/{{ device.id }}" class="btn-small">
+                    <a href="{{ url_for('device_detail', device_id=device.id) }}" class="btn-small">
                         <i class="fas fa-eye"></i> Details
                     </a>
                 </td>

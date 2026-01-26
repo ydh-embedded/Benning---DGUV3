@@ -420,22 +420,22 @@
         
         <ul class="nav-menu">
             <li>
-                <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+                <a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">
                     <i class="fas fa-home"></i> Dashboard
                 </a>
             </li>
             <li>
-                <a href="/quick-add" class="{% if request.path == '/quick-add' %}active{% endif %}">
+                <a href="{{ url_for('quick_add') }}" class="{% if request.path == '/quick-add' %}active{% endif %}">
                     <i class="fas fa-plus-circle"></i> Schnellerfassung
                 </a>
             </li>
             <li>
-                <a href="/devices" class="{% if request.path == '/devices' %}active{% endif %}">
+                <a href="{{ url_for('devices') }}" class="{% if request.path == '/devices' %}active{% endif %}">
                     <i class="fas fa-list"></i> Geräteliste
                 </a>
             </li>
             <li>
-                <a href="/usbc-inspections" class="{% if request.path == '/usbc-inspections' %}active{% endif %}">
+                <a href="{{ url_for('usbc_inspections') }}" class="{% if request.path == '/usbc-inspections' %}active{% endif %}">
                     <i class="fas fa-check-circle"></i> USB-C Prüfungen
                 </a>
             </li>
@@ -458,14 +458,6 @@
     <script>
         function printPage() {
             window.print();
-        }
-        
-        function exportPDF(type = 'all', customer = null) {
-            let url = '/pdf/devices';
-            if (type === 'customer' && customer) {
-                url = `/pdf/devices/customer/${customer}`;
-            }
-            window.open(url, '_blank');
         }
     </script>
     

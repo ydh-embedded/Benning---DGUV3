@@ -1,4 +1,4 @@
-"""MySQL Device Repository - Hexagonal Architecture Pattern mit customer_device_id"""
+
 import time
 from typing import List, Optional
 from src.core.domain.device import Device
@@ -45,6 +45,15 @@ class MySQLDeviceRepository:
             if not device.customer_device_id and device.customer:
                 device.customer_device_id = self._generate_customer_device_id(device.customer)
             
+            # FIX: Konvertiere leere Strings zu NULL für serial_number
+            # Dies verhindert Duplicate-Fehler bei leeren Seriennummern
+            if device.serial_number == "" or device.serial_number is None:
+                device.serial_number = None
+            
+            # FIX: Konvertiere leere Strings zu NULL für purchase_date
+            if device.purchase_date == "":
+                device.purchase_date = None
+            
             query = """
                 INSERT INTO devices 
                 (customer, customer_device_id, name, type, location, manufacturer, serial_number, purchase_date, status, notes)
@@ -58,8 +67,8 @@ class MySQLDeviceRepository:
                 device.type,
                 device.location,
                 device.manufacturer,
-                device.serial_number,
-                device.purchase_date,
+                device.serial_number,  # Jetzt NULL statt leerer String
+                device.purchase_date,  # Jetzt NULL statt leerer String
                 device.status or 'active',
                 device.notes
             )
@@ -103,7 +112,7 @@ class MySQLDeviceRepository:
             self.logger.log_db_operation(
                 operation="SELECT",
                 table="devices",
-                result="success",
+                result="success" if result else "not_found",
                 duration_ms=duration_ms
             )
             
@@ -118,7 +127,7 @@ class MySQLDeviceRepository:
             raise
     
     def get_by_customer_device_id(self, customer_device_id: str) -> Optional[Device]:
-        """Get device by customer_device_id (e.g. Parloa-00001)"""
+        """Get device by customer_device_id"""
         try:
             start_time = time.time()
             conn = self._get_connection()
@@ -132,8 +141,9 @@ class MySQLDeviceRepository:
             self.logger.log_db_operation(
                 operation="SELECT",
                 table="devices",
-                result="success",
-                duration_ms=duration_ms
+                result="success" if result else "not_found",
+                duration_ms=duration_ms,
+                customer_device_id=customer_device_id
             )
             
             cursor.close()
@@ -162,7 +172,8 @@ class MySQLDeviceRepository:
                 operation="SELECT",
                 table="devices",
                 result="success",
-                duration_ms=duration_ms
+                duration_ms=duration_ms,
+                count=len(results)
             )
             
             cursor.close()
@@ -180,16 +191,23 @@ class MySQLDeviceRepository:
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
             
+            # FIX: Konvertiere leere Strings zu NULL
+            if device.serial_number == "":
+                device.serial_number = None
+            if device.purchase_date == "":
+                device.purchase_date = None
+            
             query = """
                 UPDATE devices 
-                SET customer = %s, name = %s, type = %s, location = %s, 
-                    manufacturer = %s, serial_number = %s, purchase_date = %s, 
-                    status = %s, notes = %s
-                WHERE customer_device_id = %s
+                SET customer = %s, customer_device_id = %s, name = %s, type = %s, 
+                    location = %s, manufacturer = %s, serial_number = %s, 
+                    purchase_date = %s, status = %s, notes = %s
+                WHERE id = %s
             """
             
             values = (
                 device.customer,
+                device.customer_device_id,
                 device.name,
                 device.type,
                 device.location,
@@ -198,7 +216,7 @@ class MySQLDeviceRepository:
                 device.purchase_date,
                 device.status or 'active',
                 device.notes,
-                device.customer_device_id
+                device.id
             )
             
             cursor.execute(query, values)
@@ -232,6 +250,8 @@ class MySQLDeviceRepository:
             cursor.execute(query, (customer_device_id,))
             conn.commit()
             
+            rows_affected = cursor.rowcount
+            
             duration_ms = (time.time() - start_time) * 1000
             self.logger.log_db_operation(
                 operation="DELETE",
@@ -244,22 +264,21 @@ class MySQLDeviceRepository:
             cursor.close()
             conn.close()
             
-            return cursor.rowcount > 0
+            return rows_affected > 0
         except Exception as e:
             self.logger.error(f"Failed to delete device: {e}", exception=e)
             raise
     
-    def get_next_customer_device_id(self, customer: str) -> str:
-        """Get next customer device ID (e.g., Parloa-00001)"""
+    def _generate_customer_device_id(self, customer: str) -> str:
+        """Generate next customer_device_id"""
         try:
             conn = self._get_connection()
             cursor = conn.cursor(dictionary=True)
             
-            # Get the highest number for this customer
             query = """
-                SELECT MAX(CAST(SUBSTRING_INDEX(customer_device_id, '-', -1) AS UNSIGNED)) as max_num 
-                FROM devices 
-                WHERE customer = %s AND customer_device_id LIKE %s
+                SELECT MAX(CAST(SUBSTRING(customer_device_id, LENGTH(%s) + 2) AS UNSIGNED)) as max_num
+                FROM devices
+                WHERE customer_device_id LIKE %s
             """
             
             pattern = f"{customer}-%"
@@ -269,25 +288,16 @@ class MySQLDeviceRepository:
             cursor.close()
             conn.close()
             
-            max_num = result.get('max_num') if result else 0
-            next_num = (max_num or 0) + 1
+            max_num = result['max_num'] if result and result['max_num'] else 0
+            next_num = max_num + 1
             
-            # Format as "Customer-00001"
-            next_id = f"{customer}-{next_num:05d}"
-            
-            self.logger.debug(f"Generated customer_device_id: {next_id}", customer=customer)
-            
-            return next_id
+            return f"{customer}-{next_num:05d}"
         except Exception as e:
-            self.logger.error(f"Failed to get next customer_device_id: {e}", exception=e)
-            return f"{customer}-00001"
-    
-    def _generate_customer_device_id(self, customer: str) -> str:
-        """Generate a new customer device ID"""
-        return self.get_next_customer_device_id(customer)
+            self.logger.error(f"Failed to generate customer_device_id: {e}", exception=e)
+            raise
     
     def _map_to_device(self, row: dict) -> Device:
-        """Map database row to Device domain object"""
+        """Map database row to Device object"""
         return Device(
             id=row.get('id'),
             customer=row.get('customer'),
@@ -298,8 +308,9 @@ class MySQLDeviceRepository:
             manufacturer=row.get('manufacturer'),
             serial_number=row.get('serial_number'),
             purchase_date=row.get('purchase_date'),
+            status=row.get('status'),
+            notes=row.get('notes'),
             last_inspection=row.get('last_inspection'),
             next_inspection=row.get('next_inspection'),
-            status=row.get('status'),
-            notes=row.get('notes')
+            qr_code=row.get('qr_code')
         )

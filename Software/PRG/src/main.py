@@ -136,16 +136,65 @@ def create_app():
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================
-    # SCHNELLERFASSUNG
+    # SCHNELLERFASSUNG - KORRIGIERTE VERSION
     # ========================================================================
     @app.route('/quick-add', methods=['GET', 'POST'])
     def quick_add():
         """Schnellerfassung für neue Geräte"""
         if request.method == 'POST':
-            return jsonify({'status': 'success'})
+            try:
+                # 1. Extrahiere Formulardaten
+                customer = request.form.get('customer', '').strip()
+                device_name = request.form.get('name', '').strip()
+                device_type = request.form.get('type', '').strip()
+                location = request.form.get('location', '').strip()
+                manufacturer = request.form.get('manufacturer', '').strip()
+                serial_number = request.form.get('serial_number', '').strip()
+                purchase_date = request.form.get('purchase_date', None)
+                status = request.form.get('status', 'active').strip()
+                notes = request.form.get('notes', '').strip()
+                
+                # 2. Validiere erforderliche Felder
+                if not customer:
+                    return jsonify({'status': 'error', 'message': 'Kundenname ist erforderlich'}), 400
+                if not device_name:
+                    return jsonify({'status': 'error', 'message': 'Gerätename ist erforderlich'}), 400
+                if not device_type:
+                    return jsonify({'status': 'error', 'message': 'Gerätetyp ist erforderlich'}), 400
+                
+                # 3. Erstelle Device-Objekt
+                from src.core.domain.device import Device
+                device = Device(
+                    customer=customer,
+                    name=device_name,
+                    type=device_type,
+                    location=location,
+                    manufacturer=manufacturer,
+                    serial_number=serial_number,
+                    purchase_date=purchase_date,
+                    status=status,
+                    notes=notes
+                )
+                
+                # 4. Rufe CreateDeviceUseCase auf
+                created_device = container.create_device_usecase.execute(device)
+                
+                # 5. Gebe Erfolg zurück
+                return jsonify({
+                    'status': 'success',
+                    'device_id': created_device.id,
+                    'customer_device_id': created_device.customer_device_id,
+                    'message': f'Gerät {created_device.customer_device_id} erfolgreich erstellt'
+                }), 201
+                
+            except ValueError as ve:
+                return jsonify({'status': 'error', 'message': f'Validierungsfehler: {str(ve)}'}), 400
+            except Exception as e:
+                print(f"Error creating device: {e}")
+                return jsonify({'status': 'error', 'message': f'Fehler beim Speichern: {str(e)}'}), 500
         
         try:
-            # Hole nächste ID für Standard-Kunden
+            # GET-Anfrage: Zeige Formular an
             next_id = container.device_repository.get_next_customer_device_id('Default')
             return render_template('quick_add.html', next_id=next_id)
         except Exception as e:

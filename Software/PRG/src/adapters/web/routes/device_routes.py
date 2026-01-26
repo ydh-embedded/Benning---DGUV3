@@ -91,15 +91,28 @@ def get_next_customer_device_id():
     try:
         customer = request.args.get('customer', '').strip()
         if not customer:
-            return jsonify({'success': False, 'error': 'Customer parameter required'}), 400
+            return jsonify({
+                'success': False, 
+                'error': 'Customer parameter required'
+            }), 400
         
         next_id = container.device_repository.get_next_customer_device_id(customer)
         return jsonify({
             'success': True,
             'next_id': next_id
-        })
+        }), 200
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+        import traceback
+        error_msg = str(e)
+        error_trace = traceback.format_exc()
+        print(f"ERROR in get_next_customer_device_id: {error_msg}")
+        print(error_trace)
+        return jsonify({
+            'success': False, 
+            'error': error_msg,
+            'error_type': 'database_error',
+            'details': error_trace
+        }), 500
 
 
 @device_bp.route('', methods=['POST'])
@@ -179,11 +192,14 @@ def create_device():
     except Exception as e:
         # ✅ FIX: Detaillierte Fehlerbehandlung für unerwartete Fehler
         import traceback
+        error_trace = traceback.format_exc()
+        print(f"ERROR in create_device: {str(e)}")
+        print(error_trace)
         return jsonify({
             'success': False,
             'error': str(e),
             'error_type': 'unexpected_error',
-            'details': traceback.format_exc()
+            'details': error_trace
         }), 500
 
 

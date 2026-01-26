@@ -72,8 +72,8 @@
                 <select name="status" id="pruefsStatus" required>
                     <option value="">-- Bitte wählen --</option>
                     <option value="active">✅ Bestanden</option>
-                    <option value="false">❌ Nicht bestanden</option>
-                    <option value="lost">🔴 Verloren</option>
+                    <option value="inactive">❌ Inaktiv</option>
+                    <option value="retired">🔴 Außerbetrieb</option>
                 </select>
                 <small>Status der letzten Prüfung</small>
             </div>
@@ -99,11 +99,226 @@
     
     <div id="message" class="message"></div>
 </div>
+
+<!-- Error Popup Modal -->
+<div id="errorModal" class="error-modal" style="display: none;">
+    <div class="error-modal-content">
+        <div class="error-modal-header">
+            <h2>❌ Fehler bei der Speicherung</h2>
+            <button class="error-modal-close" onclick="closeErrorModal()">&times;</button>
+        </div>
+        <div class="error-modal-body">
+            <div id="errorMessage"></div>
+            <div id="errorDetails" style="display: none;">
+                <h4>📋 Technische Details:</h4>
+                <pre id="errorTrace"></pre>
+            </div>
+            <button class="btn-toggle-details" onclick="toggleErrorDetails()">
+                ▼ Details anzeigen
+            </button>
+        </div>
+        <div class="error-modal-footer">
+            <button class="btn-primary" onclick="closeErrorModal()">OK</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.error-modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.error-modal-header {
+    background-color: #d32f2f;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.error-modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.error-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.error-modal-body {
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+#errorMessage {
+    background-color: white;
+    padding: 15px;
+    border-left: 4px solid #d32f2f;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+#errorDetails {
+    background-color: white;
+    padding: 15px;
+    border-left: 4px solid #ff9800;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+#errorDetails h4 {
+    margin-top: 0;
+    color: #ff9800;
+}
+
+#errorTrace {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+    max-height: 300px;
+    color: #333;
+}
+
+.btn-toggle-details {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.btn-toggle-details:hover {
+    background-color: #1976D2;
+}
+
+.error-modal-footer {
+    padding: 15px 20px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-radius: 0 0 8px 8px;
+}
+
+.error-modal-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+</style>
+
 {% endblock %}
 
 {% block extra_js %}
 
 <script>
+// Fehler-Modal Funktionen
+function showErrorModal(error, details = null) {
+    const modal = document.getElementById('errorModal');
+    const errorMsg = document.getElementById('errorMessage');
+    const errorDetailsDiv = document.getElementById('errorDetails');
+    const errorTrace = document.getElementById('errorTrace');
+    
+    // Hauptfehler anzeigen
+    errorMsg.innerHTML = `<strong>Fehler:</strong> ${escapeHtml(error)}`;
+    
+    // Details anzeigen wenn vorhanden
+    if (details) {
+        errorTrace.textContent = details;
+        errorDetailsDiv.style.display = 'block';
+    } else {
+        errorDetailsDiv.style.display = 'none';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function closeErrorModal() {
+    document.getElementById('errorModal').style.display = 'none';
+}
+
+function toggleErrorDetails() {
+    const details = document.getElementById('errorDetails');
+    const btn = document.querySelector('.btn-toggle-details');
+    
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        btn.textContent = '▲ Details verbergen';
+    } else {
+        details.style.display = 'none';
+        btn.textContent = '▼ Details anzeigen';
+    }
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
 // Setze Prüfdatum auf heute
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
@@ -141,11 +356,22 @@ document.getElementById('customerInput').addEventListener('change', async (e) =>
     try {
         const response = await fetch(`/api/devices/next-id?customer=${encodeURIComponent(customer)}`);
         const result = await response.json();
+        
         if (result.success) {
             document.getElementById('deviceId').value = result.next_id;
+        } else {
+            showErrorModal(
+                result.error || 'Fehler beim Generieren der Geräte-ID',
+                result.details || null
+            );
+            document.getElementById('deviceId').value = '';
         }
     } catch (error) {
         console.error('Fehler:', error);
+        showErrorModal(
+            'Netzwerkfehler beim Generieren der Geräte-ID',
+            error.message
+        );
     }
 });
 
@@ -157,8 +383,7 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
     
     // Validiere Prüfstatus
     if (!data.status) {
-        document.getElementById('message').innerHTML = '❌ Fehler: Prüfstatus ist erforderlich';
-        document.getElementById('message').className = 'message error';
+        showErrorModal('Fehler: Prüfstatus ist erforderlich');
         return;
     }
     
@@ -205,12 +430,17 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
                 document.getElementById('message').innerHTML = '';
             }, 3000);
         } else {
-            throw new Error(result.error);
+            // Zeige Fehler im Modal
+            const errorMsg = result.error || 'Unbekannter Fehler';
+            const errorDetails = result.details || (result.errors ? result.errors.join('\n') : null);
+            showErrorModal(errorMsg, errorDetails);
         }
     } catch (error) {
-        document.getElementById('message').innerHTML = '❌ Fehler: ' + error.message;
-        document.getElementById('message').className = 'message error';
         console.error('Fehler beim Speichern:', error);
+        showErrorModal(
+            'Fehler beim Speichern des Geräts',
+            error.message
+        );
     }
 });
 </script>

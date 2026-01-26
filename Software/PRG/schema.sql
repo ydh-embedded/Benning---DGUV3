@@ -1,5 +1,5 @@
 -- ============================================================================
--- Benning Device Manager - Schema mit Kunde und QR-Code
+-- Benning Device Manager - Schema mit Kunde und QR-Code (KORRIGIERT)
 -- ============================================================================
 
 DROP DATABASE IF EXISTS benning_device_manager;
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS devices (
     customer_device_id VARCHAR(255) UNIQUE NOT NULL COMMENT 'Formatierte Kunden-ID: Kunde-00001',
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100),
-    serial_number VARCHAR(255) UNIQUE,
+    serial_number VARCHAR(255),
     manufacturer VARCHAR(255),
     model VARCHAR(255),
     location VARCHAR(255),

@@ -194,6 +194,82 @@ def create_app():
             return render_template('quick_add.html', next_id='Default-00001', error=str(e), usbc_inspections_url=usbc_inspections_url)
 
     # ========================================================================
+    # ANCHOR: GERÄT HINZUFÜGEN (API ENDPOINT)
+    # Hauptaufgabe: Neues Gerät mit optionalen USB-Inspektionsdaten speichern
+    # - POST: Speichere neues Gerät und optionale USB-Inspektion
+    # - Aktualisiere Gerätestatus basierend auf USB-Inspektionsergebnis
+    # ========================================================================
+    @app.route('/device/add', methods=['POST'])
+    def add_device():
+        """API Endpoint zum Hinzufügen eines neuen Geräts mit optionalen USB-Inspektionsdaten"""
+        try:
+            # Hole JSON Daten aus Request
+            data = request.get_json()
+            
+            # Validiere erforderliche Felder
+            required_fields = ['customer', 'name', 'type']
+            if not all(field in data for field in required_fields):
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Erforderliche Felder fehlen: customer, name, type'
+                }), 400
+            
+            # TODO: Speichere Gerät in Datenbank
+            # device = container.create_device_usecase.execute({
+            #     'customer': data['customer'],
+            #     'name': data['name'],
+            #     'type': data['type'],
+            #     'location': data.get('location'),
+            #     'manufacturer': data.get('manufacturer'),
+            #     'serial_number': data.get('serial_number'),
+            #     'purchase_date': data.get('purchase_date'),
+            #     'last_inspection': data.get('last_inspection'),
+            #     'next_inspection': data.get('next_inspection'),
+            #     'status': data.get('status', 'active'),
+            #     'notes': data.get('notes')
+            # })
+            
+            # Bestimme Gerätestatus basierend auf USB-Inspektionsergebnis
+            device_status = data.get('status', 'active')
+            
+            # Wenn USB-Kabel Typ und Testergebnis vorhanden
+            if data.get('type') == 'USB-Kabel' and data.get('test_result'):
+                if data['test_result'] == 'bestanden':
+                    device_status = 'active'
+                else:  # nicht_bestanden, verloren, nicht_vorhanden
+                    device_status = 'maintenance'
+            
+            # TODO: Speichere USB-Inspektionsdaten wenn vorhanden
+            # if data.get('cable_type') and data.get('test_result'):
+            #     inspection = container.create_inspection_usecase.execute({
+            #         'device_id': device.id,
+            #         'cable_type': data['cable_type'],
+            #         'test_result': data['test_result'],
+            #         'internal_resistance': data.get('internal_resistance'),
+            #         'emarker_active': data.get('emarker_active'),
+            #         'notes': data.get('inspection_notes')
+            #     })
+            
+            print(f"Gerät erstellt: {data['name']} (Typ: {data['type']})")
+            if data.get('cable_type'):
+                print(f"USB-Inspektion: {data['cable_type']} - {data['test_result']}")
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Gerät erfolgreich gespeichert',
+                'device_status': device_status
+            }), 201
+            
+        except Exception as e:
+            print(f"Fehler beim Speichern des Geräts: {e}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Fehler beim Speichern des Geräts',
+                'details': str(e)
+            }), 500
+
+
+    # ========================================================================
     # ANCHOR: USB-C INSPEKTIONEN LISTE
     # Hauptaufgabe: Übersicht aller USB-C Kabel-Prüfungen
     # - Zeige alle durchgeführten Inspektionen

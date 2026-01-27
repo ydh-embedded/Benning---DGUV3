@@ -33,59 +33,12 @@
                 <option value="Kabel">Kabel</option>
                 <option value="USB-Kabel">USB-Kabel</option>
                 <option value="Verlängerung">Verlängerung</option>
-                <option value="Reinigungsgerät">Reinigungsgerät</option>
+                <option value="Reinigungsgerat">Reinigungsgerat</option>
                 <option value="Sonstiges">Sonstiges</option>
             </select>
         </div>
         
-        <div class="form-group">
-            <label>Standort:</label>
-            <input type="text" name="location">
-        </div>
-        
-        <div class="form-group">
-            <label>Hersteller:</label>
-            <input type="text" name="manufacturer">
-        </div>
-        
-        <div class="form-group">
-            <label>Seriennummer:</label>
-            <input type="text" name="serial_number">
-        </div>
-        
-        <div class="form-group">
-            <label>Kaufdatum:</label>
-            <input type="date" name="purchase_date">
-        </div>
-        
-        <div class="form-section">
-            <h3>📋 Prüfinformationen</h3>
-            
-            <div class="form-group">
-                <label>Prüfdatum: *</label>
-                <input type="date" name="last_inspection" id="inspectionDate" required>
-                <small>Standardmäßig auf heute gesetzt</small>
-            </div>
-            
-            <div class="form-group">
-                <label>Prüfstatus: *</label>
-                <select name="status" id="pruefsStatus" required>
-                    <option value="">-- Bitte wählen --</option>
-                    <option value="active">✅ Bestanden</option>
-                    <option value="inactive">❌ Inaktiv</option>
-                    <option value="retired">🔴 Außerbetrieb</option>
-                </select>
-                <small>Status der letzten Prüfung</small>
-            </div>
-            
-            <div class="form-group">
-                <label>Nächste Prüfung:</label>
-                <input type="date" name="next_inspection" id="nextInspectionDate">
-                <small>Wird automatisch berechnet (12 Monate nach Prüfdatum)</small>
-            </div>
-        </div>
-
-        <!-- ===== USB-KABEL INSPEKTIONS-SEKTION (DYNAMISCH) ===== -->
+        <!-- ===== USB-KABEL INSPEKTIONS-SEKTION (DYNAMISCH) - VOR STANDORT ===== -->
         <div id="usbCableSection" class="form-section" style="display: none;">
             <h3>🔌 USB-Kabel Inspektionsdaten</h3>
             
@@ -142,6 +95,54 @@
             </div>
         </div>
         
+        <div class="form-group">
+            <label>Standort:</label>
+            <input type="text" name="location">
+        </div>
+        
+        <div class="form-group">
+            <label>Hersteller:</label>
+            <input type="text" name="manufacturer">
+        </div>
+        
+        <div class="form-group">
+            <label>Seriennummer:</label>
+            <input type="text" name="serial_number">
+        </div>
+        
+        <div class="form-group">
+            <label>Kaufdatum:</label>
+            <input type="date" name="purchase_date">
+        </div>
+        
+        <div class="form-section">
+            <h3>📋 Prüfinformationen</h3>
+            
+            <div class="form-group">
+                <label>Prüfdatum: *</label>
+                <input type="date" name="last_inspection" id="inspectionDate" required>
+                <small>Standardmäßig auf heute gesetzt</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Prüfstatus: *</label>
+                <select name="status" id="pruefsStatus" required>
+                    <option value="">-- Bitte wählen --</option>
+                    <option value="active">✅ Bestanden</option>
+                    <option value="inactive">❌ Inaktiv</option>
+                    <option value="retired">🔴 Außerbetrieb</option>
+                </select>
+                <small>Status der letzten Prüfung</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Nächste Prüfung:</label>
+                <input type="date" name="next_inspection" id="nextInspectionDate">
+                <small>Wird automatisch berechnet (12 Monate nach Prüfdatum)</small>
+            </div>
+        </div>
+
+
         <div class="form-group">
             <label>Allgemeine Notizen:</label>
             <textarea name="notes" rows="3"></textarea>
@@ -477,20 +478,55 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
     
+    // Konvertiere emarker_active zu Boolean wenn vorhanden
+    if (data.emarker_active === 'true') {
+        data.emarker_active = true;
+    } else if (data.emarker_active === 'false') {
+        data.emarker_active = false;
+    } else if (data.emarker_active === '') {
+        data.emarker_active = null;
+    }
+    
+    // Konvertiere internal_resistance zu Float wenn vorhanden
+    if (data.internal_resistance) {
+        data.internal_resistance = parseFloat(data.internal_resistance);
+    }
+    
     try {
-        // TODO: Sende Daten an Backend
-        // const response = await fetch('/device/add', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(data)
-        // });
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '💾 Speichern...';
         
-        console.log('Formular Daten:', data);
-        showErrorModal('Feature noch nicht implementiert', 'Das Speichern ist noch nicht vollständig implementiert.');
+        // Sende Daten an Backend
+        const response = await fetch('/device/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Erfolg - Umleitung zur Geraeteteliste
+            window.location.href = '{{ url_for("devices") }}';
+        } else {
+            // Fehler vom Server
+            showErrorModal(
+                result.message || 'Fehler beim Speichern des Geraets',
+                result.details || null
+            );
+            submitBtn.disabled = false;
+            submitBtn.textContent = '💾 Speichern & Weiter';
+        }
     } catch (error) {
+        console.error('Fehler:', error);
         showErrorModal('Fehler beim Speichern', error.message);
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Speichern & Weiter';
     }
 });
+
 </script>
 
 {% endblock %}

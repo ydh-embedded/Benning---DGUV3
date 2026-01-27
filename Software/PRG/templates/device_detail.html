@@ -82,6 +82,55 @@
     <div class="button-group">
         <button onclick="history.back()" class="btn btn-secondary">← Zurück</button>
         <a href="{{ url_for('devices') }}" class="btn btn-secondary">📋 Zur Liste</a>
+        <button onclick="openDeleteModal()" class="btn btn-danger">🗑️ Löschen</button>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="delete-modal" style="display: none;">
+    <div class="delete-modal-content">
+        <div class="delete-modal-header">
+            <h2>⚠️ Gerät löschen?</h2>
+            <button class="delete-modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="delete-modal-body">
+            <p><strong>Gerät:</strong> {{ device.name }} ({{ device.customer_device_id }})</p>
+            <p class="warning-text">⚠️ Diese Aktion kann nicht rückgängig gemacht werden. Alle Inspektionsdaten werden ebenfalls gelöscht.</p>
+            <p>Möchtest du dieses Gerät wirklich löschen?</p>
+        </div>
+        <div class="delete-modal-footer">
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">Abbrechen</button>
+            <button class="btn btn-danger" onclick="confirmDelete()">🗑️ Ja, löschen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Success Modal -->
+<div id="deleteSuccessModal" class="delete-modal" style="display: none;">
+    <div class="delete-modal-content">
+        <div class="delete-modal-header success">
+            <h2>✅ Gerät gelöscht</h2>
+        </div>
+        <div class="delete-modal-body">
+            <p>Das Gerät <strong>{{ device.name }}</strong> wurde erfolgreich gelöscht.</p>
+            <p>Du wirst in Kürze zur Geräteliste weitergeleitet...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Error Modal -->
+<div id="deleteErrorModal" class="delete-modal" style="display: none;">
+    <div class="delete-modal-content">
+        <div class="delete-modal-header error">
+            <h2>❌ Fehler beim Löschen</h2>
+            <button class="delete-modal-close" onclick="closeDeleteErrorModal()">&times;</button>
+        </div>
+        <div class="delete-modal-body">
+            <p id="errorMessage"></p>
+        </div>
+        <div class="delete-modal-footer">
+            <button class="btn btn-primary" onclick="closeDeleteErrorModal()">OK</button>
+        </div>
     </div>
 </div>
 
@@ -234,6 +283,7 @@
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .btn {
@@ -244,6 +294,7 @@
     transition: all 0.2s;
     border: none;
     cursor: pointer;
+    font-size: 14px;
 }
 
 .btn-secondary {
@@ -255,8 +306,199 @@
     background-color: #545b62;
 }
 
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
 .text-muted {
     color: #999;
 }
+
+/* Delete Modal Styles */
+.delete-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.delete-modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.delete-modal-header {
+    background-color: #dc3545;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.delete-modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.delete-modal-header.success {
+    background-color: #28a745;
+}
+
+.delete-modal-header.error {
+    background-color: #dc3545;
+}
+
+.delete-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.delete-modal-body {
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.delete-modal-body p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.warning-text {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 12px;
+    border-radius: 4px;
+    color: #856404;
+    margin: 15px 0;
+}
+
+.delete-modal-footer {
+    padding: 15px 20px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-radius: 0 0 8px 8px;
+}
+
+.delete-modal-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
 </style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const deviceId = {{ device.id }};
+
+function openDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+function closeDeleteErrorModal() {
+    document.getElementById('deleteErrorModal').style.display = 'none';
+}
+
+async function confirmDelete() {
+    try {
+        closeDeleteModal();
+        
+        // Sende DELETE-Request an Backend
+        const response = await fetch(`/device/${deviceId}/delete`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Erfolg - Zeige Success Modal
+            document.getElementById('deleteSuccessModal').style.display = 'flex';
+            
+            // Leite nach 2 Sekunden zur Geräteliste um
+            setTimeout(() => {
+                window.location.href = '{{ url_for("devices") }}';
+            }, 2000);
+        } else {
+            // Fehler - Zeige Error Modal
+            document.getElementById('errorMessage').textContent = 
+                result.message || 'Fehler beim Löschen des Geräts';
+            document.getElementById('deleteErrorModal').style.display = 'flex';
+        }
+    } catch (error) {
+        console.error('Fehler:', error);
+        document.getElementById('errorMessage').textContent = 
+            'Ein Fehler ist aufgetreten: ' + error.message;
+        document.getElementById('deleteErrorModal').style.display = 'flex';
+    }
+}
+
+// Schließe Modal wenn außerhalb geklickt wird
+document.addEventListener('click', (e) => {
+    const deleteModal = document.getElementById('deleteModal');
+    if (e.target === deleteModal) {
+        closeDeleteModal();
+    }
+});
+</script>
 {% endblock %}

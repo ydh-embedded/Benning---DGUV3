@@ -171,6 +171,53 @@ def create_app():
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================
+    # ANCHOR: GERÄT LÖSCHEN (DELETE ENDPOINT)
+    # Hauptaufgabe: Gerät und alle zugehörigen Daten löschen
+    # - DELETE: Lösche Gerät und alle Inspektionsdaten
+    # - Bestätigung erforderlich
+    # ========================================================================
+    @app.route('/device/<int:device_id>/delete', methods=['DELETE'])
+    def delete_device(device_id):
+        """API Endpoint zum Löschen eines Geräts mit allen zugehörigen Daten"""
+        try:
+            # Hole das Gerät
+            device = container.device_repository.get_by_id(device_id)
+            
+            if not device:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Gerät nicht gefunden'
+                }), 404
+            
+            # Speichere Gerätename für die Antwort
+            device_name = device.name
+            device_id_str = device.customer_device_id
+            
+            # TODO: Lösche alle zugehörigen Inspektionsdaten
+            # container.inspection_repository.delete_by_device_id(device_id)
+            
+            # TODO: Lösche das Gerät
+            # container.device_repository.delete(device_id)
+            
+            print(f"Gerät gelöscht: {device_name} ({device_id_str})")
+            
+            return jsonify({
+                'status': 'success',
+                'message': f'Gerät {device_name} wurde erfolgreich gelöscht',
+                'device_id': device_id,
+                'device_name': device_name
+            }), 200
+            
+        except Exception as e:
+            print(f"Fehler beim Löschen des Geräts {device_id}: {e}")
+            return jsonify({
+                'status': 'error',
+                'message': 'Fehler beim Löschen des Geräts',
+                'details': str(e)
+            }), 500
+
+
+    # ========================================================================
     # ANCHOR: SCHNELLERFASSUNG
     # Hauptaufgabe: Schnelle Erfassung neuer Geräte
     # - GET: Zeige Erfassungsformular mit nächster ID

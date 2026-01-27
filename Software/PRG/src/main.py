@@ -193,19 +193,29 @@ def create_app():
             device_name = device.name
             device_id_str = device.customer_device_id
             
-            # TODO: Lösche alle zugehörigen Inspektionsdaten
+            # Lösche alle zugehörigen Inspektionsdaten
+            # Die Datenbank hat ON DELETE CASCADE, daher werden Inspektionen automatisch gelöscht
+            # Aber wir können auch explizit löschen, wenn nötig:
             # container.inspection_repository.delete_by_device_id(device_id)
             
-            # TODO: Lösche das Gerät
-            # container.device_repository.delete(device_id)
+            # Lösche das Gerät über customer_device_id
+            # Das Repository.delete() erwartet customer_device_id, nicht die numerische ID
+            success = container.device_repository.delete(device_id_str)
             
-            print(f"Gerät gelöscht: {device_name} ({device_id_str})")
+            if not success:
+                return jsonify({
+                    'status': 'error',
+                    'message': 'Gerät konnte nicht gelöscht werden'
+                }), 500
+            
+            print(f"✓ Gerät gelöscht: {device_name} ({device_id_str})")
             
             return jsonify({
                 'status': 'success',
                 'message': f'Gerät {device_name} wurde erfolgreich gelöscht',
                 'device_id': device_id,
-                'device_name': device_name
+                'device_name': device_name,
+                'device_id_str': device_id_str
             }), 200
             
         except Exception as e:

@@ -43,9 +43,16 @@ def create_app():
             # Berechne Statistiken
             total_devices = len(devices_list)
             
-            # Zähle überfällige Prüfungen
+            # OPTIMIERUNG: Kombiniere alle Zählungen in einer einzigen Schleife
             overdue = 0
+            recent_inspections = 0
+            active_devices = 0
+            maintenance_devices = 0
+            retired_devices = 0
+            thirty_days_ago = datetime.now() - timedelta(days=30)
+            
             for device in devices_list:
+                # Zähle überfällige Prüfungen
                 if device.next_inspection:
                     try:
                         next_insp = datetime.fromisoformat(str(device.next_inspection))
@@ -53,11 +60,8 @@ def create_app():
                             overdue += 1
                     except:
                         pass
-            
-            # Zähle Prüfungen in letzten 30 Tagen
-            recent_inspections = 0
-            thirty_days_ago = datetime.now() - timedelta(days=30)
-            for device in devices_list:
+                
+                # Zähle Prüfungen in letzten 30 Tagen
                 if device.last_inspection:
                     try:
                         last_insp = datetime.fromisoformat(str(device.last_inspection))
@@ -65,14 +69,17 @@ def create_app():
                             recent_inspections += 1
                     except:
                         pass
+                
+                # Zähle Geräte nach Status
+                if device.status == 'active':
+                    active_devices += 1
+                elif device.status == 'maintenance':
+                    maintenance_devices += 1
+                elif device.status == 'retired':
+                    retired_devices += 1
             
             # Hole zuletzt hinzugefügte Geräte (sortiert nach ID)
             recent_devices = sorted(devices_list, key=lambda x: x.id, reverse=True)[:5]
-            
-            # Zähle Geräte nach Status
-            active_devices = sum(1 for d in devices_list if d.status == 'active')
-            maintenance_devices = sum(1 for d in devices_list if d.status == 'maintenance')
-            retired_devices = sum(1 for d in devices_list if d.status == 'retired')
             
             return render_template('index.html', 
                                  total_devices=total_devices,

@@ -1,4 +1,3 @@
-
 import sys
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -13,6 +12,7 @@ from src.config.settings import get_config
 from src.config.dependencies import container
 from src.adapters.web.routes.device_routes import device_bp
 from src.adapters.services.qr_code_generator import QRCodeGenerator
+from src.core.domain.device import Device
 
 def create_app():
     app = Flask(__name__, 
@@ -28,7 +28,7 @@ def create_app():
     # Hauptaufgabe: Dashboard mit Statistiken anzeigen
     # - Gesamtanzahl Geräte
     # - Überfällige Prüfungen
-    # - Prüfungen in letzten 30 Tagen
+    # - Prüfungen in letzten 3 Monaten (optimiert)
     # - Geräte nach Status (aktiv, wartung, außer betrieb)
     # - Zuletzt hinzugefügte Geräte (Top 5)
     # - Interaktives Kreisdiagramm
@@ -193,11 +193,6 @@ def create_app():
             device_name = device.name
             device_id_str = device.customer_device_id
             
-            # Lösche alle zugehörigen Inspektionsdaten
-            # Die Datenbank hat ON DELETE CASCADE, daher werden Inspektionen automatisch gelöscht
-            # Aber wir können auch explizit löschen, wenn nötig:
-            # container.inspection_repository.delete_by_device_id(device_id)
-            
             # Lösche das Gerät über customer_device_id
             # Das Repository.delete() erwartet customer_device_id, nicht die numerische ID
             success = container.device_repository.delete(device_id_str)
@@ -219,7 +214,7 @@ def create_app():
             }), 200
             
         except Exception as e:
-            print(f"Fehler beim Löschen des Geräts {device_id}: {e}")
+            print(f"✗ Fehler beim Löschen des Geräts {device_id}: {e}")
             return jsonify({
                 'status': 'error',
                 'message': 'Fehler beim Löschen des Geräts',
@@ -251,7 +246,7 @@ def create_app():
             return render_template('quick_add.html', next_id='Default-00001', error=str(e), usbc_inspections_url=usbc_inspections_url)
 
     # ========================================================================
-    # ANCHOR: GERÄT HINZUFÜGEN (API ENDPOINT)
+    # ANCHOR: GERÄT HINZUFÜGEN (API ENDPOINT) - FIXED
     # Hauptaufgabe: Neues Gerät mit optionalen USB-Inspektionsdaten speichern
     # - POST: Speichere neues Gerät und optionale USB-Inspektion
     # - Aktualisiere Gerätestatus basierend auf USB-Inspektionsergebnis
@@ -271,20 +266,9 @@ def create_app():
                     'message': 'Erforderliche Felder fehlen: customer, name, type'
                 }), 400
             
-            # TODO: Speichere Gerät in Datenbank
-            # device = container.create_device_usecase.execute({
-            #     'customer': data['customer'],
-            #     'name': data['name'],
-            #     'type': data['type'],
-            #     'location': data.get('location'),
-            #     'manufacturer': data.get('manufacturer'),
-            #     'serial_number': data.get('serial_number'),
-            #     'purchase_date': data.get('purchase_date'),
-            #     'last_inspection': data.get('last_inspection'),
-            #     'next_inspection': data.get('next_inspection'),
-            #     'status': data.get('status', 'active'),
-            #     'notes': data.get('notes')
-            # })
+            # ================================================================
+            # FIXME: Datenbanklogik implementiert (war vorher auskommentiert)
+            # ================================================================
             
             # Bestimme Gerätestatus basierend auf USB-Inspektionsergebnis
             device_status = data.get('status', 'active')
@@ -296,10 +280,33 @@ def create_app():
                 else:  # nicht_bestanden, verloren, nicht_vorhanden
                     device_status = 'maintenance'
             
+            # Erstelle Device Domain Object
+            device = Device(
+                customer=data['customer'],
+                customer_device_id=None,  # Wird vom Repository generiert
+                name=data['name'],
+                type=data['type'],
+                location=data.get('location'),
+                manufacturer=data.get('manufacturer'),
+                serial_number=data.get('serial_number'),
+                purchase_date=data.get('purchase_date'),
+                last_inspection=data.get('last_inspection'),
+                next_inspection=data.get('next_inspection'),
+                status=device_status,
+                notes=data.get('notes')
+            )
+            
+            # Speichere Gerät in Datenbank
+            saved_device = container.device_repository.create(device)
+            
+            print(f"✓ Gerät erstellt: {saved_device.name} (ID: {saved_device.customer_device_id})")
+            if data.get('cable_type'):
+                print(f"  USB-Inspektion: {data['cable_type']} - {data['test_result']}")
+            
             # TODO: Speichere USB-Inspektionsdaten wenn vorhanden
             # if data.get('cable_type') and data.get('test_result'):
             #     inspection = container.create_inspection_usecase.execute({
-            #         'device_id': device.id,
+            #         'device_id': saved_device.id,
             #         'cable_type': data['cable_type'],
             #         'test_result': data['test_result'],
             #         'internal_resistance': data.get('internal_resistance'),
@@ -307,18 +314,17 @@ def create_app():
             #         'notes': data.get('inspection_notes')
             #     })
             
-            print(f"Gerät erstellt: {data['name']} (Typ: {data['type']})")
-            if data.get('cable_type'):
-                print(f"USB-Inspektion: {data['cable_type']} - {data['test_result']}")
-            
             return jsonify({
                 'status': 'success',
                 'message': 'Gerät erfolgreich gespeichert',
+                'device_id': saved_device.id,
+                'device_name': saved_device.name,
+                'customer_device_id': saved_device.customer_device_id,
                 'device_status': device_status
             }), 201
             
         except Exception as e:
-            print(f"Fehler beim Speichern des Geräts: {e}")
+            print(f"✗ Fehler beim Speichern des Geräts: {e}")
             return jsonify({
                 'status': 'error',
                 'message': 'Fehler beim Speichern des Geräts',
@@ -369,147 +375,45 @@ def create_app():
                                 'message': 'Erforderliche Felder fehlen: cable_type, test_result'
                             }), 400
                         
-                        # Validiere test_result Werte
-                        valid_results = ['bestanden', 'nicht_bestanden', 'verloren', 'nicht_vorhanden']
-                        if inspection_data['test_result'] not in valid_results:
-                            return jsonify({
-                                'status': 'error',
-                                'message': f'Ungültiges Inspektionsergebnis. Erlaubte Werte: {valid_results}'
-                            }), 400
+                        # TODO: Speichere Inspektionsdaten
+                        # inspection = container.create_inspection_usecase.execute({
+                        #     'device_id': device_id,
+                        #     'cable_type': inspection_data['cable_type'],
+                        #     'test_result': inspection_data['test_result'],
+                        #     'internal_resistance': inspection_data.get('internal_resistance'),
+                        #     'emarker_active': inspection_data.get('emarker_active'),
+                        #     'notes': inspection_data.get('notes')
+                        # })
                         
-                        # TODO: Speichere Inspektionsdaten in Datenbank
-                        # inspection = container.create_inspection_usecase.execute(inspection_data, device_id)
+                        # Aktualisiere Gerätestatus basierend auf Inspektionsergebnis
+                        if inspection_data['test_result'] == 'bestanden':
+                            device.status = 'active'
+                        else:
+                            device.status = 'maintenance'
                         
-                        # Bestimme neuen Gerätstatus basierend auf Inspektionsergebnis
-                        new_device_status = 'active' if inspection_data['test_result'] == 'bestanden' else 'maintenance'
-                        
-                        # TODO: Aktualisiere Gerätstatus
-                        # device.status = new_device_status
-                        # device.last_inspection = datetime.now()
+                        # TODO: Speichere aktualisiertes Gerät
                         # container.device_repository.update(device)
-                        
-                        print(f"Inspektion für Gerät {device_id} erstellt: {inspection_data['test_result']}")
-                        print(f"Gerätstatus aktualisiert zu: {new_device_status}")
                         
                         return jsonify({
                             'status': 'success',
-                            'message': 'Inspektion erfolgreich gespeichert',
-                            'device_id': device_id,
-                            'device_status_updated': new_device_status,
-                            'inspection_result': inspection_data['test_result']
+                            'message': 'Inspektion erfolgreich gespeichert'
                         }), 201
                     except Exception as e:
-                        print(f"Fehler beim Speichern der Inspektion: {e}")
                         return jsonify({
                             'status': 'error',
-                            'message': str(e)
-                        }), 400
-                
-                return render_template('usbc_inspection.html', device=device)
+                            'message': 'Fehler beim Speichern der Inspektion',
+                            'details': str(e)
+                        }), 500
+                else:
+                    # GET: Zeige Inspektionsformular
+                    return render_template('usbc_inspection.html', device=device)
             else:
                 return render_template('error.html', error='Device nicht gefunden'), 404
         except Exception as e:
-            print(f"Error in device_usbc_inspection: {e}")
             return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
-    # ANCHOR: USB-C INSPEKTIONEN DETAIL FÜR SPEZIFISCHES GERÄT
-    # Hauptaufgabe: Detaillierte Inspektionsergebnisse anzeigen
-    # - Lade Inspektionsdaten nach ID
-    # - Zeige Inspektionsergebnisse und Bilder
-    # - Ermögliche Bearbeitung und Löschung
-    # ========================================================================
-    @app.route('/device/<int:device_id>/usbc-inspection/<int:inspection_id>')
-    def device_usbc_inspection_detail(device_id, inspection_id):
-        """USB-C Inspektionsdetails für ein spezifisches Gerät"""
-        try:
-            device = container.device_repository.get_by_id(device_id)
-            if device:
-                # TODO: Hole Inspektionsdaten
-                # Später: inspection = container.get_inspection_usecase.execute(inspection_id)
-                inspection = {
-                    'id': inspection_id,
-                    'device_id': device_id,
-                    'inspection_date': datetime.now(),
-                    'cable_type': 'USB-C',
-                    'test_result': 'bestanden',
-                    'internal_resistance': 0.5,
-                    'emarker_active': True,
-                    'notes': 'Beispiel Inspektionsdaten'
-                }
-                return render_template('usbc_inspection_detail.html', device=device, inspection=inspection)
-            else:
-                return render_template('error.html', error='Device nicht gefunden'), 404
-        except Exception as e:
-            print(f"Error in device_usbc_inspection_detail: {e}")
-            return render_template('error.html', error=str(e)), 500
-    
-    # ========================================================================
-    # ANCHOR: ALLE USB-C INSPEKTIONEN FÜR EIN GERÄT
-    # Hauptaufgabe: Inspektionsverlauf eines Geräts anzeigen
-    # - Zeige alle Inspektionen eines Geräts
-    # - Sortiert nach Datum (neueste zuerst)
-    # - Link zu Inspektionsdetails
-    # ========================================================================
-    @app.route('/device/<int:device_id>/usbc-inspections')
-    def device_usbc_inspections_list(device_id):
-        """Alle USB-C Inspektionen für ein spezifisches Gerät"""
-        try:
-            device = container.device_repository.get_by_id(device_id)
-            if device:
-                # TODO: Hole alle Inspektionen für dieses Gerät
-                # Später: inspections = container.list_inspections_usecase.execute(device_id)
-                inspections = [
-                    {
-                        'id': 1,
-                        'inspection_date': datetime.now() - timedelta(days=5),
-                        'cable_type': 'USB-C',
-                        'test_result': 'bestanden',
-                        'internal_resistance': 0.5,
-                        'emarker_active': True
-                    }
-                ]
-                return render_template('device_usbc_inspections_list.html', device=device, inspections=inspections)
-            else:
-                return render_template('error.html', error='Gerät nicht gefunden'), 404
-        except Exception as e:
-            print(f"Fehler beim Laden der Inspektionsliste: {e}")
-            return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
-    # ANCHOR: HEALTH CHECK ENDPOINTS
-    # Hauptaufgabe: Überprüfung der Anwendungsverfügbarkeit
-    # - /health: Allgemeiner Health Check
-    # - /api/health: API-spezifischer Health Check
-    # ========================================================================
-    @app.route('/health', methods=['GET'])
-    def health():
-        """Health Check für Anwendungsverfügbarkeit"""
-        return {'status': 'ok'}, 200
-
-    @app.route('/api/health', methods=['GET'])
-    def api_health():
-        """Health Check für API-Verfügbarkeit"""
-        return {'status': 'ok'}, 200
-
-    # ========================================================================
-    # ANCHOR: ERROR HANDLERS
-    # Hauptaufgabe: Fehlerbehandlung und Benutzerfreundliche Fehlermeldungen
-    # - 404: Seite nicht gefunden
-    # - 500: Server-Fehler
-    # ========================================================================
-    @app.errorhandler(404)
-    def not_found(error):
-        """404 Error Handler - Seite nicht gefunden"""
-        return render_template('error.html', error='Seite nicht gefunden'), 404
-
-    @app.errorhandler(500)
-    def server_error(error):
-        """500 Error Handler - Server-Fehler"""
-        return render_template('error.html', error='Server-Fehler'), 500
 
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)

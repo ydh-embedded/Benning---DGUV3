@@ -24,11 +24,18 @@ def create_app():
     app.register_blueprint(device_bp)
 
     # ========================================================================
-    # DASHBOARD - INDEX
+    # ANCHOR: DASHBOARD - INDEX
+    # Hauptaufgabe: Dashboard mit Statistiken anzeigen
+    # - Gesamtanzahl Geräte
+    # - Überfällige Prüfungen
+    # - Prüfungen in letzten 30 Tagen
+    # - Geräte nach Status (aktiv, wartung, außer betrieb)
+    # - Zuletzt hinzugefügte Geräte (Top 5)
+    # - Interaktives Kreisdiagramm
     # ========================================================================
     @app.route('/')
     def index():
-        """Dashboard mit Statistiken"""
+        """Dashboard mit Statistiken und Kreisdiagramm"""
         try:
             # Hole alle Geräte
             devices_list = container.list_devices_usecase.execute()
@@ -62,11 +69,20 @@ def create_app():
             # Hole zuletzt hinzugefügte Geräte (sortiert nach ID)
             recent_devices = sorted(devices_list, key=lambda x: x.id, reverse=True)[:5]
             
+            # Zähle Geräte nach Status
+            active_devices = sum(1 for d in devices_list if d.status == 'active')
+            maintenance_devices = sum(1 for d in devices_list if d.status == 'maintenance')
+            retired_devices = sum(1 for d in devices_list if d.status == 'retired')
+            
             return render_template('index.html', 
                                  total_devices=total_devices,
                                  overdue=overdue,
                                  recent_inspections=recent_inspections,
-                                 recent_devices=recent_devices)
+                                 recent_devices=recent_devices,
+                                 all_devices=devices_list,
+                                 active_devices=active_devices,
+                                 maintenance_devices=maintenance_devices,
+                                 retired_devices=retired_devices)
         except Exception as e:
             print(f"Error loading dashboard: {e}")
             return render_template('index.html', 
@@ -74,14 +90,22 @@ def create_app():
                                  overdue=0,
                                  recent_inspections=0,
                                  recent_devices=[],
+                                 all_devices=[],
+                                 active_devices=0,
+                                 maintenance_devices=0,
+                                 retired_devices=0,
                                  error=str(e))
 
     # ========================================================================
-    # GERÄTELISTE
+    # ANCHOR: GERÄTELISTE
+    # Hauptaufgabe: Alle Geräte mit QR-Codes anzeigen
+    # - Lade alle Geräte aus der Datenbank
+    # - Generiere QR-Code für jedes Gerät
+    # - Zeige in Tabellenformat mit Suchfunktion
     # ========================================================================
     @app.route('/devices')
     def devices():
-        """Geräteliste mit QR-Codes"""
+        """Geräteliste mit QR-Codes und Suchfunktion"""
         try:
             # Hole alle Geräte aus der Datenbank
             devices_list = container.list_devices_usecase.execute()
@@ -109,11 +133,15 @@ def create_app():
             return render_template('devices.html', devices=[], error=str(e))
 
     # ========================================================================
-    # GERÄTEDETAILS
+    # ANCHOR: GERÄTEDETAILS
+    # Hauptaufgabe: Detaillierte Informationen zu einem spezifischen Gerät
+    # - Lade Gerätedaten nach ID
+    # - Generiere QR-Code
+    # - Zeige Inspektionshistorie
     # ========================================================================
     @app.route('/device/<int:device_id>')
     def device_detail(device_id):
-        """Gerätedetails mit QR-Code"""
+        """Gerätedetails mit QR-Code und Inspektionshistorie"""
         try:
             device = container.device_repository.get_by_id(device_id)
             if device:
@@ -136,11 +164,15 @@ def create_app():
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================
-    # SCHNELLERFASSUNG
+    # ANCHOR: SCHNELLERFASSUNG
+    # Hauptaufgabe: Schnelle Erfassung neuer Geräte
+    # - GET: Zeige Erfassungsformular mit nächster ID
+    # - POST: Speichere neues Gerät in Datenbank
+    # - Automatische ID-Generierung nach Kundennamen
     # ========================================================================
     @app.route('/quick-add', methods=['GET', 'POST'])
     def quick_add():
-        """Schnellerfassung für neue Geräte"""
+        """Schnellerfassung für neue Geräte mit automatischer ID"""
         if request.method == 'POST':
             return jsonify({'status': 'success'})
         
@@ -152,11 +184,15 @@ def create_app():
             return render_template('quick_add.html', next_id='Default-00001', error=str(e))
 
     # ========================================================================
-    # USB-C INSPEKTIONEN LISTE
+    # ANCHOR: USB-C INSPEKTIONEN LISTE
+    # Hauptaufgabe: Übersicht aller USB-C Kabel-Prüfungen
+    # - Zeige alle durchgeführten Inspektionen
+    # - Filtermöglichkeiten nach Status und Datum
+    # - Link zu Inspektionsdetails
     # ========================================================================
     @app.route('/usbc-inspections')
     def usbc_inspections():
-        """USB-C Inspektionen Übersicht"""
+        """USB-C Inspektionen Übersicht mit Filterfunktion"""
         try:
             # Placeholder: Später mit echten Inspektionsdaten
             inspections = []
@@ -165,21 +201,11 @@ def create_app():
             return render_template('usbc_inspections_list.html', inspections=[], error=str(e))
 
     # ========================================================================
-    # USB-C INSPEKTIONEN DETAIL (ALT)
-    # ========================================================================
-    @app.route('/usbc-inspection/<int:inspection_id>')
-    def usbc_inspection_detail(inspection_id):
-        """USB-C Inspektionsdetails"""
-        try:
-            # Placeholder: Später mit echten Inspektionsdaten
-            inspection = {}
-            device = {}
-            return render_template('usbc_inspection.html', inspection=inspection, device=device)
-        except Exception as e:
-            return render_template('error.html', error=str(e)), 500
-
-    # ========================================================================
-    # USB-C INSPEKTIONEN FÜR SPEZIFISCHES GERÄT - NEU
+    # ANCHOR: USB-C INSPEKTIONEN FÜR SPEZIFISCHES GERÄT
+    # Hauptaufgabe: Inspektionsformular für ein Gerät
+    # - GET: Zeige Inspektionsformular
+    # - POST: Speichere Inspektionsergebnis
+    # - Verknüpfung mit Gerätedaten
     # ========================================================================
     @app.route('/device/<int:device_id>/usbc-inspection', methods=['GET', 'POST'])
     def device_usbc_inspection(device_id):
@@ -204,7 +230,11 @@ def create_app():
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================
-    # USB-C INSPEKTIONEN DETAIL FÜR SPEZIFISCHES GERÄT - NEU
+    # ANCHOR: USB-C INSPEKTIONEN DETAIL FÜR SPEZIFISCHES GERÄT
+    # Hauptaufgabe: Detaillierte Inspektionsergebnisse anzeigen
+    # - Lade Inspektionsdaten nach ID
+    # - Zeige Inspektionsergebnisse und Bilder
+    # - Ermögliche Bearbeitung und Löschung
     # ========================================================================
     @app.route('/device/<int:device_id>/usbc-inspection/<int:inspection_id>')
     def device_usbc_inspection_detail(device_id, inspection_id):
@@ -223,29 +253,35 @@ def create_app():
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================
-    # HEALTH CHECK ENDPOINTS
+    # ANCHOR: HEALTH CHECK ENDPOINTS
+    # Hauptaufgabe: Überprüfung der Anwendungsverfügbarkeit
+    # - /health: Allgemeiner Health Check
+    # - /api/health: API-spezifischer Health Check
     # ========================================================================
     @app.route('/health', methods=['GET'])
     def health():
-        """Health Check"""
+        """Health Check für Anwendungsverfügbarkeit"""
         return {'status': 'ok'}, 200
 
     @app.route('/api/health', methods=['GET'])
     def api_health():
-        """API Health Check"""
+        """Health Check für API-Verfügbarkeit"""
         return {'status': 'ok'}, 200
 
     # ========================================================================
-    # ERROR HANDLERS
+    # ANCHOR: ERROR HANDLERS
+    # Hauptaufgabe: Fehlerbehandlung und Benutzerfreundliche Fehlermeldungen
+    # - 404: Seite nicht gefunden
+    # - 500: Server-Fehler
     # ========================================================================
     @app.errorhandler(404)
     def not_found(error):
-        """404 Error Handler"""
+        """404 Error Handler - Seite nicht gefunden"""
         return render_template('error.html', error='Seite nicht gefunden'), 404
 
     @app.errorhandler(500)
     def server_error(error):
-        """500 Error Handler"""
+        """500 Error Handler - Server-Fehler"""
         return render_template('error.html', error='Server-Fehler'), 500
 
     return app

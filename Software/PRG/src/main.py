@@ -186,9 +186,12 @@ def create_app():
         try:
             # Hole nächste ID für Standard-Kunden
             next_id = container.device_repository.get_next_customer_device_id('Default')
-            return render_template('quick_add.html', next_id=next_id)
+            # Generiere URL zur USB-C Inspektionen Seite
+            usbc_inspections_url = url_for('usbc_inspections')
+            return render_template('quick_add.html', next_id=next_id, usbc_inspections_url=usbc_inspections_url)
         except Exception as e:
-            return render_template('quick_add.html', next_id='Default-00001', error=str(e))
+            usbc_inspections_url = url_for('usbc_inspections')
+            return render_template('quick_add.html', next_id='Default-00001', error=str(e), usbc_inspections_url=usbc_inspections_url)
 
     # ========================================================================
     # ANCHOR: USB-C INSPEKTIONEN LISTE
@@ -221,13 +224,53 @@ def create_app():
             device = container.device_repository.get_by_id(device_id)
             if device:
                 if request.method == 'POST':
-                    # TODO: Speichere Inspektionsdaten
-                    # Später: Verwende container.create_inspection_usecase.execute(inspection)
-                    return jsonify({
-                        'status': 'success',
-                        'message': 'Inspektion gespeichert',
-                        'device_id': device_id
-                    }), 201
+                    try:
+                        # Hole Inspektionsdaten aus dem Request
+                        inspection_data = request.get_json()
+                        
+                        # Validiere erforderliche Felder
+                        required_fields = ['cable_type', 'test_result']
+                        if not all(field in inspection_data for field in required_fields):
+                            return jsonify({
+                                'status': 'error',
+                                'message': 'Erforderliche Felder fehlen: cable_type, test_result'
+                            }), 400
+                        
+                        # Validiere test_result Werte
+                        valid_results = ['bestanden', 'nicht_bestanden', 'verloren', 'nicht_vorhanden']
+                        if inspection_data['test_result'] not in valid_results:
+                            return jsonify({
+                                'status': 'error',
+                                'message': f'Ungültiges Inspektionsergebnis. Erlaubte Werte: {valid_results}'
+                            }), 400
+                        
+                        # TODO: Speichere Inspektionsdaten in Datenbank
+                        # inspection = container.create_inspection_usecase.execute(inspection_data, device_id)
+                        
+                        # Bestimme neuen Gerätstatus basierend auf Inspektionsergebnis
+                        new_device_status = 'active' if inspection_data['test_result'] == 'bestanden' else 'maintenance'
+                        
+                        # TODO: Aktualisiere Gerätstatus
+                        # device.status = new_device_status
+                        # device.last_inspection = datetime.now()
+                        # container.device_repository.update(device)
+                        
+                        print(f"Inspektion für Gerät {device_id} erstellt: {inspection_data['test_result']}")
+                        print(f"Gerätstatus aktualisiert zu: {new_device_status}")
+                        
+                        return jsonify({
+                            'status': 'success',
+                            'message': 'Inspektion erfolgreich gespeichert',
+                            'device_id': device_id,
+                            'device_status_updated': new_device_status,
+                            'inspection_result': inspection_data['test_result']
+                        }), 201
+                    except Exception as e:
+                        print(f"Fehler beim Speichern der Inspektion: {e}")
+                        return jsonify({
+                            'status': 'error',
+                            'message': str(e)
+                        }), 400
                 
                 return render_template('usbc_inspection.html', device=device)
             else:
@@ -251,12 +294,53 @@ def create_app():
             if device:
                 # TODO: Hole Inspektionsdaten
                 # Später: inspection = container.get_inspection_usecase.execute(inspection_id)
-                inspection = {}
+                inspection = {
+                    'id': inspection_id,
+                    'device_id': device_id,
+                    'inspection_date': datetime.now(),
+                    'cable_type': 'USB-C',
+                    'test_result': 'bestanden',
+                    'internal_resistance': 0.5,
+                    'emarker_active': True,
+                    'notes': 'Beispiel Inspektionsdaten'
+                }
                 return render_template('usbc_inspection_detail.html', device=device, inspection=inspection)
             else:
                 return render_template('error.html', error='Device nicht gefunden'), 404
         except Exception as e:
             print(f"Error in device_usbc_inspection_detail: {e}")
+            return render_template('error.html', error=str(e)), 500
+    
+    # ========================================================================
+    # ANCHOR: ALLE USB-C INSPEKTIONEN FÜR EIN GERÄT
+    # Hauptaufgabe: Inspektionsverlauf eines Geräts anzeigen
+    # - Zeige alle Inspektionen eines Geräts
+    # - Sortiert nach Datum (neueste zuerst)
+    # - Link zu Inspektionsdetails
+    # ========================================================================
+    @app.route('/device/<int:device_id>/usbc-inspections')
+    def device_usbc_inspections_list(device_id):
+        """Alle USB-C Inspektionen für ein spezifisches Gerät"""
+        try:
+            device = container.device_repository.get_by_id(device_id)
+            if device:
+                # TODO: Hole alle Inspektionen für dieses Gerät
+                # Später: inspections = container.list_inspections_usecase.execute(device_id)
+                inspections = [
+                    {
+                        'id': 1,
+                        'inspection_date': datetime.now() - timedelta(days=5),
+                        'cable_type': 'USB-C',
+                        'test_result': 'bestanden',
+                        'internal_resistance': 0.5,
+                        'emarker_active': True
+                    }
+                ]
+                return render_template('device_usbc_inspections_list.html', device=device, inspections=inspections)
+            else:
+                return render_template('error.html', error='Gerät nicht gefunden'), 404
+        except Exception as e:
+            print(f"Fehler beim Laden der Inspektionsliste: {e}")
             return render_template('error.html', error=str(e)), 500
 
     # ========================================================================

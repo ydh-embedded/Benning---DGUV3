@@ -44,13 +44,13 @@ def create_app():
             total_devices = len(devices_list)
             
             # OPTIMIERUNG: Kombiniere alle Zählungen in einer einzigen Schleife
+            # Zähle Prüfungen in letzten 3 Monaten
             overdue = 0
             recent_inspections = 0
             active_devices = 0
             maintenance_devices = 0
             retired_devices = 0
-            thirty_days_ago = datetime.now() - timedelta(days=30)
-            
+            three_months_ago = datetime.now() - timedelta(days=90)          
             for device in devices_list:
                 # Zähle überfällige Prüfungen
                 if device.next_inspection:
@@ -61,11 +61,11 @@ def create_app():
                     except:
                         pass
                 
-                # Zähle Prüfungen in letzten 30 Tagen
+                # Zähle Prüfungen in letzten 3 Monaten
                 if device.last_inspection:
                     try:
                         last_insp = datetime.fromisoformat(str(device.last_inspection))
-                        if last_insp > thirty_days_ago:
+                        if last_insp > three_months_ago:
                             recent_inspections += 1
                     except:
                         pass

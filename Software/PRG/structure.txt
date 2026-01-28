@@ -116,3 +116,71 @@
     └── install_podman_cachyos.sh
 
 16 directories, 45 files
+.
+├── benning_db.sh
+├── comprehensive_tests.sh
+├── container_flask.txt
+├── coverage_results.log
+├── db_operation.txt
+├── device_repo.txt
+├── device.txt
+├── Dockerfile.benning
+├── .env
+├── env.template
+├── error_logs.txt
+├── errors.txt
+├── favicon.ico
+├── fix_db.sh
+├── fix.sh
+├── health_checks.txt
+├── integrate_response_handler.sh
+├── logs.txt
+├── mapping_test.sh
+├── podman-compose.yml
+├── qr_code_generator.py
+├── requirements_hexagon.txt
+├── reset_db.sh
+├── restart-container.sh
+├── schema.sql
+├── src
+│   ├── adapters
+│   ├── config
+│   ├── core
+│   ├── __init__.py
+│   ├── main.py
+│   ├── main.py.backup
+│   └── __pycache__
+├── static
+│   ├── css
+│   └── uploads
+├── structure.txt
+├── templates
+│   ├── base.html
+│   ├── device_detail.html
+│   ├── devices.html
+│   ├── error.html
+│   ├── index.html
+│   ├── quick_add.html
+│   ├── schutzklasse.html
+│   ├── usbc_inspection.html
+│   └── usbc_inspections_list.html
+├── test_devices.sh
+├── test_results.log
+├── tests
+│   ├── conftest.py
+│   ├── fixtures
+│   ├── __init__.py
+│   ├── integration
+│   ├── __pycache__
+│   ├── test_device_api_integration.py
+│   ├── test_device_domain.py
+│   ├── test_device_routes_comprehensive.py
+│   ├── test_device_usecases.py
+│   ├── test_mysql_device_repository.py
+│   └── unit
+└── Tools
+    ├── install_benning_podman_FINAL.sh
+    ├── install_benning_podman.sh
+    └── install_podman_cachyos.sh
+
+16 directories, 50 files

@@ -439,6 +439,11 @@
                     <i class="fas fa-check-circle"></i> USB-C Prüfungen
                 </a>
             </li>
+            <li>
+                <a href="{{ url_for('schutzklasse') }}" class="{% if request.path == '/schutzklasse' %}active{% endif %}">
+                    <i class="fas fa-shield-alt"></i> Schutzklassen
+                </a>
+            </li>
         </ul>
     </nav>
     

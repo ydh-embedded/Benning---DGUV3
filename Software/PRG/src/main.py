@@ -411,6 +411,23 @@ def create_app():
                 return render_template('error.html', error='Device nicht gefunden'), 404
         except Exception as e:
             return render_template('error.html', error=str(e)), 500
+    # ========================================================================
+    # ANCHOR: SCHUTZKLASSEN-INFORMATIONEN
+    # Hauptaufgabe: Informationen zu Schutzklassen-Prüfungen anzeigen
+    # - Zusammenfassung der Prüfverfahren
+    # - Informationen zu Schutzklasse 1, 2 und 3
+    # - Prüfung von dreiphasigen Geräten
+    # - Prüfung von Kabeln und Mehrfachsteckdosen
+    # - Prüfung von FI-Schutzschaltern
+    # ========================================================================
+    @app.route('/schutzklasse')
+    def schutzklasse():
+        """Informationsseite zu Schutzklassen-Prüfungen"""
+        try:
+            return render_template('schutzklasse.html')
+        except Exception as e:
+            print(f"Error loading schutzklasse page: {e}")
+            return render_template('schutzklasse.html', error=str(e))
 
     return app
 

@@ -33,7 +33,6 @@
 
 <!-- Gerätetabelle -->
 {% if devices %}
-<div style="overflow-x: auto;">
 <table class="device-table">
     <thead>
         <tr>
@@ -45,10 +44,6 @@
             <th>Seriennummer</th>
             <th>Standort</th>
             <th>Status</th>
-            <th>R<sub>PE</sub> (Ω)</th>
-            <th>R<sub>ISO</sub> (MΩ)</th>
-            <th>I<sub>PE</sub> (mA)</th>
-            <th>I<sub>B</sub> (mA)</th>
             <th>QR-Code</th>
             <th>Kunden-ID</th>
         </tr>
@@ -76,54 +71,6 @@
                     <span class="badge">{{ device.status }}</span>
                 {% endif %}
             </td>
-            <!-- Schutzleiterwiderstand R_PE (Grenzwert: < 0,3 Ω) -->
-            <td style="text-align: center;">
-                {% if device.r_pe is not none %}
-                    {% if device.r_pe < 0.3 %}
-                        <span style="color: #4caf50; font-weight: bold;">{{ "%.3f"|format(device.r_pe) }}</span>
-                    {% else %}
-                        <span style="color: #f44336; font-weight: bold;">{{ "%.3f"|format(device.r_pe) }} ⚠</span>
-                    {% endif %}
-                {% else %}
-                    <span style="color: var(--text-secondary);">-</span>
-                {% endif %}
-            </td>
-            <!-- Isolationswiderstand R_ISO (Grenzwert: > 1,0 MΩ) -->
-            <td style="text-align: center;">
-                {% if device.r_iso is not none %}
-                    {% if device.r_iso > 1.0 %}
-                        <span style="color: #4caf50; font-weight: bold;">{{ "%.3f"|format(device.r_iso) }}</span>
-                    {% else %}
-                        <span style="color: #f44336; font-weight: bold;">{{ "%.3f"|format(device.r_iso) }} ⚠</span>
-                    {% endif %}
-                {% else %}
-                    <span style="color: var(--text-secondary);">-</span>
-                {% endif %}
-            </td>
-            <!-- Schutzleiterstrom I_PE (Grenzwert: < 3,5 mA) -->
-            <td style="text-align: center;">
-                {% if device.i_pe is not none %}
-                    {% if device.i_pe < 3.5 %}
-                        <span style="color: #4caf50; font-weight: bold;">{{ "%.3f"|format(device.i_pe) }}</span>
-                    {% else %}
-                        <span style="color: #f44336; font-weight: bold;">{{ "%.3f"|format(device.i_pe) }} ⚠</span>
-                    {% endif %}
-                {% else %}
-                    <span style="color: var(--text-secondary);">-</span>
-                {% endif %}
-            </td>
-            <!-- Berührungsstrom I_B (Grenzwert: < 0,5 mA) -->
-            <td style="text-align: center;">
-                {% if device.i_b is not none %}
-                    {% if device.i_b < 0.5 %}
-                        <span style="color: #4caf50; font-weight: bold;">{{ "%.3f"|format(device.i_b) }}</span>
-                    {% else %}
-                        <span style="color: #f44336; font-weight: bold;">{{ "%.3f"|format(device.i_b) }} ⚠</span>
-                    {% endif %}
-                {% else %}
-                    <span style="color: var(--text-secondary);">-</span>
-                {% endif %}
-            </td>
             <td style="text-align: center;">
                 {% if device.qr_code %}
                     <img src="{{ device.qr_code }}" alt="QR-Code" style="width: 80px; height: 80px; border: 2px solid var(--accent-rose); border-radius: 4px;">
@@ -138,7 +85,6 @@
         {% endfor %}
     </tbody>
 </table>
-</div>
 
 <!-- Statistiken -->
 <div class="stats-grid" style="margin-top: 2rem;">
@@ -168,6 +114,7 @@
         Es wurden noch keine Geräte erfasst. 
         <a href="{{ url_for('quick_add') }}" style="color: var(--accent-gold); text-decoration: none;">
             Erfassen Sie ein neues Gerät
+        </a>rät hinzuzufügen.</strong>
         </a>
     </p>
     <a href="{{ url_for('quick_add') }}" class="btn-primary" style="margin-top: 1rem;">
@@ -201,3 +148,4 @@
     }
 </script>
 {% endblock %}
+

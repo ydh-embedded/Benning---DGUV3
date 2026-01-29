@@ -142,6 +142,38 @@
             </div>
         </div>
 
+        <!-- DGUV3 Prüfwerte (NEU) -->
+        <div class="form-section">
+            <h3>⚡ DGUV3 Prüfwerte (optional)</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Schutzleiterwiderstand (R<sub>PE</sub>) in Ω:</label>
+                    <input type="number" name="r_pe" step="0.001" min="0" placeholder="z.B. 0.150">
+                    <small>Grenzwert: &lt; 0,3 Ω</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Isolationswiderstand (R<sub>ISO</sub>) in MΩ:</label>
+                    <input type="number" name="r_iso" step="0.001" min="0" placeholder="z.B. 2.500">
+                    <small>Grenzwert: &gt; 1,0 MΩ</small>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Schutzleiterstrom (I<sub>PE</sub>) in mA:</label>
+                    <input type="number" name="i_pe" step="0.001" min="0" placeholder="z.B. 1.250">
+                    <small>Grenzwert: &lt; 3,5 mA</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Berührungsstrom (I<sub>B</sub>) in mA:</label>
+                    <input type="number" name="i_b" step="0.001" min="0" placeholder="z.B. 0.250">
+                    <small>Grenzwert: &lt; 0,5 mA</small>
+                </div>
+            </div>
+        </div>
 
         <div class="form-group">
             <label>Allgemeine Notizen:</label>

@@ -56,8 +56,8 @@ class MySQLDeviceRepository:
             
             query = """
                 INSERT INTO devices 
-                (customer, customer_device_id, name, type, location, manufacturer, serial_number, purchase_date, status, notes)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (customer, customer_device_id, name, type, location, manufacturer, serial_number, purchase_date, status, notes, r_pe, r_iso, i_pe, i_b)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
             values = (
@@ -70,7 +70,11 @@ class MySQLDeviceRepository:
                 device.serial_number,  # Jetzt NULL statt leerer String
                 device.purchase_date,  # Jetzt NULL statt leerer String
                 device.status or 'active',
-                device.notes
+                device.notes,
+                device.r_pe,
+                device.r_iso,
+                device.i_pe,
+                device.i_b
             )
             
             cursor.execute(query, values)
@@ -316,5 +320,9 @@ class MySQLDeviceRepository:
             last_inspection=row.get('last_inspection'),
             next_inspection=row.get('next_inspection'),
             status=row.get('status'),
-            notes=row.get('notes')
+            notes=row.get('notes'),
+            r_pe=row.get('r_pe'),
+            r_iso=row.get('r_iso'),
+            i_pe=row.get('i_pe'),
+            i_b=row.get('i_b')
         )

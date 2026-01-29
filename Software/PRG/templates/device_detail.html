@@ -44,6 +44,80 @@
         </div>
     </div>
     
+    <!-- DGUV3 Prüfwerte -->
+    <div class="detail-card" style="grid-column: 1 / -1;">
+        <h3>⚡ DGUV3 Prüfwerte</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <!-- Schutzleiterwiderstand -->
+            <div class="dguv3-value">
+                <dt>Schutzleiterwiderstand (R<sub>PE</sub>):</dt>
+                <dd>
+                    {% if device.r_pe is not none %}
+                        {% if device.r_pe < 0.3 %}
+                            <span class="badge badge-active">✅ {{ "%.3f"|format(device.r_pe) }} Ω</span>
+                        {% else %}
+                            <span class="badge badge-failed">⚠️ {{ "%.3f"|format(device.r_pe) }} Ω</span>
+                        {% endif %}
+                        <small style="display: block; margin-top: 5px; color: #666;">Grenzwert: &lt; 0,3 Ω</small>
+                    {% else %}
+                        <span class="text-muted">Nicht erfasst</span>
+                    {% endif %}
+                </dd>
+            </div>
+            
+            <!-- Isolationswiderstand -->
+            <div class="dguv3-value">
+                <dt>Isolationswiderstand (R<sub>ISO</sub>):</dt>
+                <dd>
+                    {% if device.r_iso is not none %}
+                        {% if device.r_iso > 1.0 %}
+                            <span class="badge badge-active">✅ {{ "%.3f"|format(device.r_iso) }} MΩ</span>
+                        {% else %}
+                            <span class="badge badge-failed">⚠️ {{ "%.3f"|format(device.r_iso) }} MΩ</span>
+                        {% endif %}
+                        <small style="display: block; margin-top: 5px; color: #666;">Grenzwert: &gt; 1,0 MΩ</small>
+                    {% else %}
+                        <span class="text-muted">Nicht erfasst</span>
+                    {% endif %}
+                </dd>
+            </div>
+            
+            <!-- Schutzleiterstrom -->
+            <div class="dguv3-value">
+                <dt>Schutzleiterstrom (I<sub>PE</sub>):</dt>
+                <dd>
+                    {% if device.i_pe is not none %}
+                        {% if device.i_pe < 3.5 %}
+                            <span class="badge badge-active">✅ {{ "%.3f"|format(device.i_pe) }} mA</span>
+                        {% else %}
+                            <span class="badge badge-failed">⚠️ {{ "%.3f"|format(device.i_pe) }} mA</span>
+                        {% endif %}
+                        <small style="display: block; margin-top: 5px; color: #666;">Grenzwert: &lt; 3,5 mA</small>
+                    {% else %}
+                        <span class="text-muted">Nicht erfasst</span>
+                    {% endif %}
+                </dd>
+            </div>
+            
+            <!-- Berührungsstrom -->
+            <div class="dguv3-value">
+                <dt>Berührungsstrom (I<sub>B</sub>):</dt>
+                <dd>
+                    {% if device.i_b is not none %}
+                        {% if device.i_b < 0.5 %}
+                            <span class="badge badge-active">✅ {{ "%.3f"|format(device.i_b) }} mA</span>
+                        {% else %}
+                            <span class="badge badge-failed">⚠️ {{ "%.3f"|format(device.i_b) }} mA</span>
+                        {% endif %}
+                        <small style="display: block; margin-top: 5px; color: #666;">Grenzwert: &lt; 0,5 mA</small>
+                    {% else %}
+                        <span class="text-muted">Nicht erfasst</span>
+                    {% endif %}
+                </dd>
+            </div>
+        </div>
+    </div>
+    
     {% if device.notes %}
     <div class="detail-card">
         <h3>📝 Notizen</h3>
@@ -239,6 +313,21 @@
 .badge-maintenance {
     background-color: #fff3cd;
     color: #856404;
+}
+
+.badge-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.dguv3-value dt {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.dguv3-value dd {
+    margin: 0;
 }
 
 .inspections-section {

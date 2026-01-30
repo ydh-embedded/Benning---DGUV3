@@ -1,10 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}USB-C Prüfung{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USB-C Prüfungen - Benning Device Manager</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
 </head>
 <body>
     <div class="container">
@@ -182,3 +187,5 @@
     </script>
 </body>
 </html>
+
+{% endblock %}

@@ -148,29 +148,29 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Schutzleiterwiderstand (R<sub>PE</sub>) in Ω:</label>
-                    <input type="number" name="r_pe" step="0.001" min="0" placeholder="z.B. 0.150">
-                    <small>Grenzwert: &lt; 0,3 Ω</small>
+                    <label>Schutzleiterwiderstand (R<sub>PE</sub>) in mΩ:</label>
+                    <input type="number" name="r_pe_input" step="1" min="0" placeholder="z.B. 150" pattern="[0-9]*">
+                    <small>Grenzwert: < 300 mΩ (= 0,3 Ω)</small>
                 </div>
                 
                 <div class="form-group">
-                    <label>Isolationswiderstand (R<sub>ISO</sub>) in MΩ:</label>
-                    <input type="number" name="r_iso" step="0.001" min="0" placeholder="z.B. 2.500">
-                    <small>Grenzwert: &gt; 1,0 MΩ</small>
+                    <label>Isolationswiderstand (R<sub>ISO</sub>) in kΩ:</label>
+                    <input type="number" name="r_iso_input" step="1" min="0" placeholder="z.B. 2500" pattern="[0-9]*">
+                    <small>Grenzwert: > 1000 kΩ (= 1,0 MΩ)</small>
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Schutzleiterstrom (I<sub>PE</sub>) in mA:</label>
-                    <input type="number" name="i_pe" step="0.001" min="0" placeholder="z.B. 1.250">
-                    <small>Grenzwert: &lt; 3,5 mA</small>
+                    <label>Schutzleiterstrom (I<sub>PE</sub>) in µA:</label>
+                    <input type="number" name="i_pe_input" step="1" min="0" placeholder="z.B. 1250" pattern="[0-9]*">
+                    <small>Grenzwert: < 3500 µA (= 3,5 mA)</small>
                 </div>
                 
                 <div class="form-group">
-                    <label>Berührungsstrom (I<sub>B</sub>) in mA:</label>
-                    <input type="number" name="i_b" step="0.001" min="0" placeholder="z.B. 0.250">
-                    <small>Grenzwert: &lt; 0,5 mA</small>
+                    <label>Berührungsstrom (I<sub>B</sub>) in µA:</label>
+                    <input type="number" name="i_b_input" step="1" min="0" placeholder="z.B. 250" pattern="[0-9]*">
+                    <small>Grenzwert: < 500 µA (= 0,5 mA)</small>
                 </div>
             </div>
         </div>
@@ -524,18 +524,26 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
         data.internal_resistance = parseFloat(data.internal_resistance);
     }
     
-    // Konvertiere DGUV3-Prüfwerte zu Float wenn vorhanden
-    if (data.r_pe) {
-        data.r_pe = parseFloat(data.r_pe);
+    // Konvertiere DGUV3-Prüfwerte von Integer-Eingabe zu Float (mit Umrechnung)
+    // R_PE: mΩ → Ω (durch 1000 teilen)
+    if (data.r_pe_input) {
+        data.r_pe = parseFloat(data.r_pe_input) / 1000;
+        delete data.r_pe_input;
     }
-    if (data.r_iso) {
-        data.r_iso = parseFloat(data.r_iso);
+    // R_ISO: kΩ → MΩ (durch 1000 teilen)
+    if (data.r_iso_input) {
+        data.r_iso = parseFloat(data.r_iso_input) / 1000;
+        delete data.r_iso_input;
     }
-    if (data.i_pe) {
-        data.i_pe = parseFloat(data.i_pe);
+    // I_PE: µA → mA (durch 1000 teilen)
+    if (data.i_pe_input) {
+        data.i_pe = parseFloat(data.i_pe_input) / 1000;
+        delete data.i_pe_input;
     }
-    if (data.i_b) {
-        data.i_b = parseFloat(data.i_b);
+    // I_B: µA → mA (durch 1000 teilen)
+    if (data.i_b_input) {
+        data.i_b = parseFloat(data.i_b_input) / 1000;
+        delete data.i_b_input;
     }
     
     try {

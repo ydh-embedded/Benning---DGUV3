@@ -1,169 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}USB-C Prüfung view{% endblock %}
+
+{% block content %}
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USB-C Kabel-Prüfung - {{ device.name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .checklist-section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(197, 151, 151, 0.2);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .checklist-section h3 {
-            color: #c59797;
-            margin-bottom: 16px;
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        
-        .checklist-item:hover {
-            background: rgba(197, 151, 151, 0.1);
-        }
-        
-        .checklist-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #c59797;
-        }
-        
-        .checklist-item label {
-            flex: 1;
-            cursor: pointer;
-            color: rgba(255, 255, 255, 0.9);
-        }
-        
-        .checklist-item.checked label {
-            text-decoration: line-through;
-            opacity: 0.6;
-        }
-        
-        .pin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-        
-        .pin-input {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px;
-            border-radius: 8px;
-        }
-        
-        .pin-input label {
-            display: block;
-            color: #c59797;
-            font-size: 0.9em;
-            margin-bottom: 4px;
-        }
-        
-        .pin-input input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(197, 151, 151, 0.3);
-            border-radius: 6px;
-            padding: 8px;
-            color: white;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .pin-input.passed {
-            border-left: 3px solid #4ade80;
-        }
-        
-        .pin-input.failed {
-            border-left: 3px solid #ef4444;
-        }
-        
-        .protocol-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-        
-        .protocol-card {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(197, 151, 151, 0.2);
-        }
-        
-        .protocol-card.supported {
-            border-left: 3px solid #4ade80;
-        }
-        
-        .photo-upload-area {
-            border: 2px dashed rgba(197, 151, 151, 0.3);
-            border-radius: 8px;
-            padding: 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .photo-upload-area:hover {
-            border-color: #c59797;
-            background: rgba(197, 151, 151, 0.05);
-        }
-        
-        .photo-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-        
-        .photo-preview img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid rgba(197, 151, 151, 0.3);
-        }
-        
-        .result-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
-        }
-        
-        .result-badge.passed {
-            background: rgba(74, 222, 128, 0.2);
-            color: #4ade80;
-        }
-        
-        .result-badge.failed {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-        
-        .result-badge.conditional {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-        }
-    </style>
+
 </head>
 <body>
     <div class="container">
@@ -482,3 +329,5 @@
     </script>
 </body>
 </html>
+
+{% endblock %}

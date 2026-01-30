@@ -90,47 +90,62 @@
                     <td style="font-size: 0.85rem; line-height: 1.4;">
                         {% set has_values = device.r_pe is not none or device.r_iso is not none or device.i_pe is not none or device.i_b is not none %}
                         {% if has_values %}
-                            <div style="display: flex; flex-direction: column; gap: 2px;">
-                                {% if device.r_pe is not none %}
-                                    <div>
-                                        <strong>R<sub>PE</sub>:</strong> 
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%;">
+                                <!-- R_PE -->
+                                <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">R<sub>PE</sub>:</span>
+                                    {% if device.r_pe is not none %}
                                         {% if device.r_pe < 0.3 %}
                                             <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_pe) }} Ω</span>
                                         {% else %}
                                             <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_pe) }} Ω ⚠</span>
                                         {% endif %}
-                                    </div>
-                                {% endif %}
-                                {% if device.r_iso is not none %}
-                                    <div>
-                                        <strong>R<sub>ISO</sub>:</strong> 
+                                    {% else %}
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">-</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- R_ISO -->
+                                <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">R<sub>ISO</sub>:</span>
+                                    {% if device.r_iso is not none %}
                                         {% if device.r_iso > 1.0 %}
                                             <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_iso) }} MΩ</span>
                                         {% else %}
                                             <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_iso) }} MΩ ⚠</span>
                                         {% endif %}
-                                    </div>
-                                {% endif %}
-                                {% if device.i_pe is not none %}
-                                    <div>
-                                        <strong>I<sub>PE</sub>:</strong> 
+                                    {% else %}
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">-</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- I_PE -->
+                                <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I<sub>PE</sub>:</span>
+                                    {% if device.i_pe is not none %}
                                         {% if device.i_pe < 3.5 %}
                                             <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_pe) }} mA</span>
                                         {% else %}
                                             <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_pe) }} mA ⚠</span>
                                         {% endif %}
-                                    </div>
-                                {% endif %}
-                                {% if device.i_b is not none %}
-                                    <div>
-                                        <strong>I<sub>B</sub>:</strong> 
+                                    {% else %}
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">-</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- I_B -->
+                                <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I<sub>B</sub>:</span>
+                                    {% if device.i_b is not none %}
                                         {% if device.i_b < 0.5 %}
                                             <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_b) }} mA</span>
                                         {% else %}
                                             <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_b) }} mA ⚠</span>
                                         {% endif %}
-                                    </div>
-                                {% endif %}
+                                    {% else %}
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">-</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         {% else %}
                             <span style="color: var(--text-secondary);">Keine Messwerte</span>

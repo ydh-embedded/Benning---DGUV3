@@ -184,3 +184,85 @@
     └── install_podman_cachyos.sh
 
 16 directories, 50 files
+.
+├── device.txt
+├── Dockerfile.benning
+├── .env
+├── env.template
+├── podman-compose.yml
+├── qr_code_generator.py
+├── requirements_hexagon.txt
+├── schema.sql
+├── src
+│   ├── adapters
+│   │   ├── file_storage
+│   │   ├── persistence
+│   │   ├── qr_generation
+│   │   ├── services
+│   │   └── web
+│   ├── config
+│   │   ├── dependencies.py
+│   │   ├── dependencies.py.backup
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   └── settings.py
+│   ├── core
+│   │   ├── domain
+│   │   ├── ports
+│   │   └── usecases
+│   ├── __init__.py
+│   ├── main.py
+│   ├── main.py.backup
+│   └── __pycache__
+│       ├── __init__.cpython-314.opt-2.pyc
+│       ├── __init__.cpython-314.pyc
+│       ├── main.cpython-314.opt-2.pyc
+│       └── main.cpython-314.pyc
+├── static
+│   ├── css
+│   │   └── style.css
+│   └── uploads
+│       ├── schutzklasse1.png
+│       └── schutzklasse2.png
+├── structure.txt
+├── templates
+│   ├── base.html
+│   ├── device_detail.html
+│   ├── devices.html
+│   ├── error.html
+│   ├── index.html
+│   ├── quick_add.html
+│   ├── schutzklasse.html
+│   ├── usbc_inspection.html
+│   └── usbc_inspections_list.html
+├── test_dguv3_backend_II.sh
+├── test_dguv3_devices.sh
+└── tests
+    ├── conftest.py
+    ├── fixtures
+    │   └── __init__.py
+    ├── __init__.py
+    ├── integration
+    │   ├── __init__.py
+    │   ├── repositories
+    │   └── routes
+    ├── __pycache__
+    │   ├── conftest.cpython-314-pytest-7.4.3.pyc
+    │   ├── __init__.cpython-314.pyc
+    │   ├── test_device_api_integration.cpython-314-pytest-7.4.3.pyc
+    │   ├── test_device_domain.cpython-314-pytest-7.4.3.pyc
+    │   ├── test_device_usecases.cpython-314-pytest-7.4.3.pyc
+    │   └── test_mysql_device_repository.cpython-314-pytest-7.4.3.pyc
+    ├── test_device_api_integration.py
+    ├── test_device_domain.py
+    ├── test_device_routes_comprehensive.py
+    ├── test_device_usecases.py
+    ├── test_mysql_device_repository.py
+    └── unit
+        ├── adapters
+        ├── domain
+        ├── __init__.py
+        ├── __pycache__
+        └── usecases
+
+30 directories, 50 files

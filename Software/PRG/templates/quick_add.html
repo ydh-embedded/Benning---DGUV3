@@ -524,13 +524,27 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
         data.internal_resistance = parseFloat(data.internal_resistance);
     }
     
+    // Konvertiere DGUV3-Prüfwerte zu Float wenn vorhanden
+    if (data.r_pe) {
+        data.r_pe = parseFloat(data.r_pe);
+    }
+    if (data.r_iso) {
+        data.r_iso = parseFloat(data.r_iso);
+    }
+    if (data.i_pe) {
+        data.i_pe = parseFloat(data.i_pe);
+    }
+    if (data.i_b) {
+        data.i_b = parseFloat(data.i_b);
+    }
+    
     try {
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.textContent = '💾 Speichern...';
         
         // Sende Daten an Backend
-        const response = await fetch('/device/add', {
+        const response = await fetch('/api/devices', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)

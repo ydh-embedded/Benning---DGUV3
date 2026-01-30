@@ -30,23 +30,20 @@
     <!-- Gerätetabelle -->
     {% if devices %}
     <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-        <table class="device-table" style="min-width: 1400px; font-size: 0.9rem;">
+        <table class="device-table" style="min-width: 890px; font-size: 0.9rem;">
             <thead>
                 <tr>
-                    <th style="width: 50px;">ID</th>
-                    <th style="width: 100px;">Kunde</th>
-                    <th style="width: 120px;">Geräte-ID</th>
-                    <th style="width: 200px;">Name</th>
+                    <!-- <th style="width: 50px;">ID</th>
+                    <th style="width: 100px;">Kunde</th> -->
+                    <th style="width: 140px;">Status & Prüfung</th>
+                    <th style="width: 130px;">Geräte-ID</th>
+                    <!-- <th style="width: 200px;">Name</th> -->
                     <th style="width: 120px;">Typ</th>
-                    <th style="width: 120px;">Seriennummer</th>
-                    <th style="width: 100px;">Standort</th>
-                    <th style="width: 100px;">Status</th>
+                    <!-- <th style="width: 120px;">Seriennummer</th> -->
+                    <!-- <th style="width: 100px;">Standort</th> -->
                     <!-- DGUV3 Prüfwerte -->
-                    <th style="width: 90px; text-align: center;">R<sub>PE</sub><br><small>(Ω)</small></th>
-                    <th style="width: 90px; text-align: center;">R<sub>ISO</sub><br><small>(MΩ)</small></th>
-                    <th style="width: 90px; text-align: center;">I<sub>PE</sub><br><small>(mA)</small></th>
-                    <th style="width: 90px; text-align: center;">I<sub>B</sub><br><small>(mA)</small></th>
-                    <th style="width: 100px; text-align: center;">QR-Code</th>
+                    <th style="width: 200px;">Messwerte</th>
+                    <th style="width: 220px;">QR-Code & Info</th>
                 </tr>
             </thead>
             <tbody id="deviceTableBody">
@@ -54,86 +51,109 @@
                 <tr class="device-row" 
                     data-search="{{ device.customer|lower }} {{ device.name|lower }} {{ device.customer_device_id|lower }}" 
                     onclick="window.location.href='{{ url_for('device_detail', device_id=device.id) }}';" 
-                    style="cursor: pointer; transition: background-color 0.2s;" 
+                    style="cursor: pointer; transition: background-color 0.2s; height: 20mm;" 
                     onmouseover="this.style.backgroundColor='rgba(212, 165, 165, 0.1)'" 
                     onmouseout="this.style.backgroundColor='transparent'">
                     
-                    <td>{{ device.id }}</td>
-                    <td>{{ device.customer }}</td>
-                    <td><strong>{{ device.customer_device_id }}</strong></td>
-                    <td>{{ device.name }}</td>
-                    <td>{{ device.type }}</td>
-                    <td>{{ device.serial_number if device.serial_number else '-' }}</td>
-                    <td>{{ device.location if device.location else '-' }}</td>
+                    <!-- <td>{{ device.id }}</td>
+                    <td>{{ device.customer }}</td> -->
                     <td>
-                        {% if device.status == 'active' %}
-                            <span class="badge badge-active"><i class="fas fa-check-circle"></i> Bestanden</span>
-                        {% elif device.status == 'inactive' %}
-                            <span class="badge" style="background: rgba(158, 158, 158, 0.2); color: #9e9e9e;"><i class="fas fa-pause-circle"></i> Inaktiv</span>
-                        {% elif device.status == 'maintenance' %}
-                            <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107;"><i class="fas fa-tools"></i> Wartung</span>
-                        {% elif device.status == 'retired' %}
-                            <span class="badge badge-failed"><i class="fas fa-times-circle"></i> Außer Betrieb</span>
-                        {% else %}
-                            <span class="badge">{{ device.status }}</span>
-                        {% endif %}
-                    </td>
-                    
-                    <!-- DGUV3 Prüfwerte mit Grenzwertprüfung -->
-                    <td style="text-align: center;">
-                        {% if device.r_pe is not none %}
-                            {% if device.r_pe < 0.3 %}
-                                <span class="badge badge-active">{{ "%.3f"|format(device.r_pe) }}</span>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            {% if device.status == 'active' %}
+                                <span class="badge badge-active"><i class="fas fa-check-circle"></i> Bestanden</span>
+                            {% elif device.status == 'inactive' %}
+                                <span class="badge" style="background: rgba(158, 158, 158, 0.2); color: #9e9e9e;"><i class="fas fa-pause-circle"></i> Inaktiv</span>
+                            {% elif device.status == 'maintenance' %}
+                                <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107;"><i class="fas fa-tools"></i> Wartung</span>
+                            {% elif device.status == 'retired' %}
+                                <span class="badge badge-failed"><i class="fas fa-times-circle"></i> Außer Betrieb</span>
                             {% else %}
-                                <span class="badge badge-failed">{{ "%.3f"|format(device.r_pe) }} ⚠</span>
+                                <span class="badge">{{ device.status }}</span>
                             {% endif %}
+                            {% if device.last_inspection %}
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                    <i class="fas fa-calendar-check" style="font-size: 0.7rem;"></i> {{ device.last_inspection.strftime('%d.%m.%Y') }}
+                                </div>
+                            {% endif %}
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                <i class="fas fa-user-check" style="font-size: 0.7rem;"></i> Prüfer: DHE
+                            </div>
+                        </div>
+                    </td>
+                    <td><strong>{{ device.customer_device_id }}</strong></td>
+                    <!-- <td>{{ device.name }}</td> -->
+                    <td>{{ device.type }}</td>
+                    <!-- <td>{{ device.serial_number if device.serial_number else '-' }}</td> -->
+                    <!-- <td>{{ device.location if device.location else '-' }}</td> -->
+                    
+                    <!-- DGUV3 Prüfwerte kombiniert -->
+                    <td style="font-size: 0.85rem; line-height: 1.4;">
+                        {% set has_values = device.r_pe is not none or device.r_iso is not none or device.i_pe is not none or device.i_b is not none %}
+                        {% if has_values %}
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                {% if device.r_pe is not none %}
+                                    <div>
+                                        <strong>R<sub>PE</sub>:</strong> 
+                                        {% if device.r_pe < 0.3 %}
+                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_pe) }} Ω</span>
+                                        {% else %}
+                                            <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_pe) }} Ω ⚠</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                {% if device.r_iso is not none %}
+                                    <div>
+                                        <strong>R<sub>ISO</sub>:</strong> 
+                                        {% if device.r_iso > 1.0 %}
+                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_iso) }} MΩ</span>
+                                        {% else %}
+                                            <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_iso) }} MΩ ⚠</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                {% if device.i_pe is not none %}
+                                    <div>
+                                        <strong>I<sub>PE</sub>:</strong> 
+                                        {% if device.i_pe < 3.5 %}
+                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_pe) }} mA</span>
+                                        {% else %}
+                                            <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_pe) }} mA ⚠</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                {% if device.i_b is not none %}
+                                    <div>
+                                        <strong>I<sub>B</sub>:</strong> 
+                                        {% if device.i_b < 0.5 %}
+                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_b) }} mA</span>
+                                        {% else %}
+                                            <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_b) }} mA ⚠</span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
                         {% else %}
-                            <span style="color: var(--text-secondary);">-</span>
+                            <span style="color: var(--text-secondary);">Keine Messwerte</span>
                         {% endif %}
                     </td>
                     
-                    <td style="text-align: center;">
-                        {% if device.r_iso is not none %}
-                            {% if device.r_iso > 1.0 %}
-                                <span class="badge badge-active">{{ "%.3f"|format(device.r_iso) }}</span>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if device.qr_code %}
+                                <img src="{{ device.qr_code }}" alt="QR-Code" style="width: 60px; height: 60px; border: 2px solid var(--accent-rose); border-radius: 4px; flex-shrink: 0;">
                             {% else %}
-                                <span class="badge badge-failed">{{ "%.3f"|format(device.r_iso) }} ⚠</span>
+                                <div style="width: 60px; height: 60px; border: 2px dashed var(--text-secondary); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i class="fas fa-qrcode" style="color: var(--text-secondary); font-size: 1.5rem;"></i>
+                                </div>
                             {% endif %}
-                        {% else %}
-                            <span style="color: var(--text-secondary);">-</span>
-                        {% endif %}
-                    </td>
-                    
-                    <td style="text-align: center;">
-                        {% if device.i_pe is not none %}
-                            {% if device.i_pe < 3.5 %}
-                                <span class="badge badge-active">{{ "%.3f"|format(device.i_pe) }}</span>
-                            {% else %}
-                                <span class="badge badge-failed">{{ "%.3f"|format(device.i_pe) }} ⚠</span>
-                            {% endif %}
-                        {% else %}
-                            <span style="color: var(--text-secondary);">-</span>
-                        {% endif %}
-                    </td>
-                    
-                    <td style="text-align: center;">
-                        {% if device.i_b is not none %}
-                            {% if device.i_b < 0.5 %}
-                                <span class="badge badge-active">{{ "%.3f"|format(device.i_b) }}</span>
-                            {% else %}
-                                <span class="badge badge-failed">{{ "%.3f"|format(device.i_b) }} ⚠</span>
-                            {% endif %}
-                        {% else %}
-                            <span style="color: var(--text-secondary);">-</span>
-                        {% endif %}
-                    </td>
-                    
-                    <td style="text-align: center;">
-                        {% if device.qr_code %}
-                            <img src="{{ device.qr_code }}" alt="QR-Code" style="width: 60px; height: 60px; border: 2px solid var(--accent-rose); border-radius: 4px;">
-                        {% else %}
-                            <span style="color: var(--text-secondary);">-</span>
-                        {% endif %}
+                            <div style="font-size: 0.8rem; line-height: 1.4; text-align: left;">
+                                <div style="margin-bottom: 3px;"><strong>ID:</strong> {{ device.customer_device_id }}</div>
+                                <div style="margin-bottom: 3px;"><strong>Typ:</strong> {{ device.type }}</div>
+                                {% if device.manufacturer %}
+                                    <div><strong>Hersteller:</strong> {{ device.manufacturer }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -201,6 +221,47 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    /* Toolbar ausblenden */
+    .toolbar {
+        display: none !important;
+    }
+    
+    /* Such- und Button-Bereich ausblenden */
+    .detail-card:has(#searchInput),
+    .detail-card:has(.btn-print) {
+        display: none !important;
+    }
+    
+    /* Alternative: Alle Buttons und Inputs ausblenden */
+    .btn-primary,
+    .btn-print,
+    #searchInput,
+    .form-group {
+        display: none !important;
+    }
+    
+    /* Grenzwert-Legende ausblenden */
+    .detail-card:has(.fa-info-circle) {
+        display: none !important;
+    }
+    
+    /* Tabelle optimieren */
+    .device-table {
+        width: 100% !important;
+        font-size: 10pt !important;
+    }
+    
+    /* Seitenumbrüche vermeiden */
+    tr {
+        page-break-inside: avoid;
+    }
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}

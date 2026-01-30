@@ -164,6 +164,8 @@ def create_device():
             manufacturer=create_request.manufacturer,
             serial_number=create_request.serial_number,
             purchase_date=_clean_date_field(create_request.purchase_date),
+            last_inspection=_clean_date_field(data.get('last_inspection')),
+            next_inspection=_clean_date_field(data.get('next_inspection')),
             status=create_request.status,
             notes=create_request.notes,
             # NEU: DGUV3 Prüfwerte aus Request auslesen

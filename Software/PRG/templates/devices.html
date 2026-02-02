@@ -21,9 +21,9 @@
             <a href="{{ url_for('quick_add') }}" class="btn-primary">
                 <i class="fas fa-plus"></i> Neues Gerät
             </a>
-            <button class="btn-print" onclick="printPage()">
+            <a href="{{ url_for('devices.devices_print') }}" target="_blank" class="btn-print" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
                 <i class="fas fa-print"></i> Drucken
-            </button>
+            </a>
         </div>
     </div>
 
@@ -33,12 +33,11 @@
         <table class="device-table" style="min-width: 890px; font-size: 0.9rem;">
             <thead>
                 <tr>
-                    <!-- <th style="width: 50px;">ID</th>
-                    <th style="width: 100px;">Kunde</th> -->
+                    <th style="width: 50px;">ID</th>
+                    <th style="width: 100px;">Kunde & Prüfer</th>
                     <th style="width: 140px;">Status & Prüfung</th>
                     <th style="width: 130px;">Geräte-ID</th>
-                    <!-- <th style="width: 200px;">Name</th> -->
-                    <th style="width: 120px;">Typ</th>
+                    <th style="width: 200px;">Gerät</th>
                     <!-- <th style="width: 120px;">Seriennummer</th> -->
                     <!-- <th style="width: 100px;">Standort</th> -->
                     <!-- DGUV3 Prüfwerte -->
@@ -55,16 +54,23 @@
                     onmouseover="this.style.backgroundColor='rgba(212, 165, 165, 0.1)'" 
                     onmouseout="this.style.backgroundColor='transparent'">
                     
-                    <!-- <td>{{ device.id }}</td>
-                    <td>{{ device.customer }}</td> -->
+                    <td>{{ device.id }}</td>
+                    <td style="font-size: 0.85rem; line-height: 1.4;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <div style="font-weight: 600;">{{ device.customer }}</div>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem;">
+                                <i class="fas fa-user-check" style="font-size: 0.7rem;"></i> Prüfer: DHE
+                            </div>
+                        </div>
+                    </td>
                     <td>
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                             {% if device.status == 'active' %}
                                 <span class="badge badge-active"><i class="fas fa-check-circle"></i> Bestanden</span>
                             {% elif device.status == 'inactive' %}
-                                <span class="badge" style="background: rgba(158, 158, 158, 0.2); color: #9e9e9e;"><i class="fas fa-pause-circle"></i> Inaktiv</span>
+                                <span class="badge badge-failed"><i class="fas fa-pause-circle"></i> Inaktiv</span>
                             {% elif device.status == 'maintenance' %}
-                                <span class="badge" style="background: rgba(255, 193, 7, 0.2); color: #ffc107;"><i class="fas fa-tools"></i> Wartung</span>
+                                <span class="badge badge-warning"><i class="fas fa-wrench"></i> Wartung</span>
                             {% elif device.status == 'retired' %}
                                 <span class="badge badge-failed"><i class="fas fa-times-circle"></i> Außer Betrieb</span>
                             {% else %}
@@ -75,14 +81,15 @@
                                     <i class="fas fa-calendar-check" style="font-size: 0.7rem;"></i> {{ device.last_inspection.strftime('%d.%m.%Y') }}
                                 </div>
                             {% endif %}
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                <i class="fas fa-user-check" style="font-size: 0.7rem;"></i> Prüfer: DHE
-                            </div>
                         </div>
                     </td>
                     <td><strong>{{ device.customer_device_id }}</strong></td>
-                    <!-- <td>{{ device.name }}</td> -->
-                    <td>{{ device.type }}</td>
+                    <td style="font-size: 0.85rem; line-height: 1.4;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <div style="font-weight: 600;">{{ device.name }}</div>
+                            <div style="color: var(--text-secondary); font-size: 0.8rem;">{{ device.type }}</div>
+                        </div>
+                    </td>
                     <!-- <td>{{ device.serial_number if device.serial_number else '-' }}</td> -->
                     <!-- <td>{{ device.location if device.location else '-' }}</td> -->
                     
@@ -236,46 +243,28 @@
     </div>
 </div>
 
+<!-- ALTE PRINT-FUßZEILE - Auskommentiert, da separate Print-Seite verwendet wird
+<div class="print-footer" style="display: none;">
+    <div class="print-footer-left">
+        <strong>yDh-embedded</strong><br>
+        <span style="color: #666; font-size: 8pt;">Adresse | Telefon | E-Mail</span>
+    </div>
+    <div class="print-footer-center">
+        Seite <span class="page-number"></span>
+    </div>
+    <div class="print-footer-right">
+        <div class="signature-line">
+            Stempel & Unterschrift
+        </div>
+    </div>
+</div>
+-->
+
 {% endblock %}
 
 {% block extra_css %}
 <style>
-@media print {
-    /* Toolbar ausblenden */
-    .toolbar {
-        display: none !important;
-    }
-    
-    /* Such- und Button-Bereich ausblenden */
-    .detail-card:has(#searchInput),
-    .detail-card:has(.btn-print) {
-        display: none !important;
-    }
-    
-    /* Alternative: Alle Buttons und Inputs ausblenden */
-    .btn-primary,
-    .btn-print,
-    #searchInput,
-    .form-group {
-        display: none !important;
-    }
-    
-    /* Grenzwert-Legende ausblenden */
-    .detail-card:has(.fa-info-circle) {
-        display: none !important;
-    }
-    
-    /* Tabelle optimieren */
-    .device-table {
-        width: 100% !important;
-        font-size: 10pt !important;
-    }
-    
-    /* Seitenumbrüche vermeiden */
-    tr {
-        page-break-inside: avoid;
-    }
-}
+/* Alte Print-Styles wurden entfernt - Separate Print-Seite (device-print.html) wird verwendet */
 </style>
 {% endblock %}
 
@@ -296,9 +285,29 @@
         });
     });
     
-    // Print-Funktion
+    /* ALTE PRINT-FUNKTIONEN - Nicht mehr benötigt, da separate Print-Seite verwendet wird
+    // Print-Funktion mit Seitennummerierung
     function printPage() {
+        // Seitennummerierung aktualisieren
+        updatePageNumbers();
         window.print();
     }
+    
+    // Seitennummerierung berechnen
+    function updatePageNumbers() {
+        const rows = document.querySelectorAll('.device-row');
+        const rowsPerPage = 11;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+        
+        // Seitenzahl in Fußbereich einfügen
+        const pageNumberSpan = document.querySelector('.page-number');
+        if (pageNumberSpan) {
+            pageNumberSpan.textContent = `1 von ${totalPages}`;
+        }
+    }
+    
+    // Seitennummerierung beim Laden initialisieren
+    document.addEventListener('DOMContentLoaded', updatePageNumbers);
+    */
 </script>
 {% endblock %}

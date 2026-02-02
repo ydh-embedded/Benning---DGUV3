@@ -1,5 +1,5 @@
 """Device Routes - Mit DGUV3-Prüfwerten erweitert"""
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template, flash, redirect, url_for
 from src.core.domain.device import Device
 from src.config.dependencies import container
 from src.adapters.web.dto.device_dto import (
@@ -8,6 +8,10 @@ from src.adapters.web.dto.device_dto import (
 )
 from datetime import datetime
 import mysql.connector
+import logging
+from src.adapters.services.qr_code_generator import QRCodeGenerator
+
+logger = logging.getLogger(__name__)
 
 device_bp = Blueprint('devices', __name__, url_prefix='/api/devices')
 
@@ -350,3 +354,37 @@ def delete_device(customer_device_id: str):
             'error_type': 'unexpected_error',
             'details': traceback.format_exc()
         }), 500
+
+
+@device_bp.route('/print')
+def devices_print():
+    """Druckansicht für alle Geräte"""
+    try:
+        devices = container.device_repository.get_all()
+        # Sortieren nach ID (neueste zuerst)
+        devices.sort(key=lambda x: x.id, reverse=True)
+        
+        # Generiere QR-Codes für jedes Gerät
+        for device in devices:
+            try:
+                qr_code_data = QRCodeGenerator.generate_qr_code(
+                    device_id=device.customer_device_id,
+                    customer=device.customer
+                )
+                if qr_code_data:
+                    device.qr_code = f"data:image/svg+xml;base64,{qr_code_data.decode('utf-8')}"
+                else:
+                    device.qr_code = None
+            except Exception as e:
+                logger.error(f"Fehler beim Generieren des QR-Codes für {device.customer_device_id}: {str(e)}")
+                device.qr_code = None
+        
+        # Aktuelles Datum für Deckseite
+        from datetime import datetime
+        current_date = datetime.now().strftime('%d.%m.%Y')
+        
+        return render_template('device-print.html', devices=devices, current_date=current_date)
+    except Exception as e:
+        logger.error(f"Fehler beim Laden der Druckansicht: {str(e)}")
+        flash('Fehler beim Laden der Druckansicht', 'error')
+        return redirect(url_for('devices'))

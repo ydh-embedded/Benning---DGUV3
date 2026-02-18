@@ -116,8 +116,8 @@
                                 <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
                                     <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">R<sub>ISO</sub>:</span>
                                     {% if device.r_iso is not none %}
-                                        {% if device.r_iso > 1.0 %}
-                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_iso) }} MΩ</span>
+                                        {% if device.r_iso > 19.99 %}
+                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">&gt;&gt; {{ "%.0f"|format(device.r_iso) }} MΩ</span>
                                         {% else %}
                                             <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.r_iso) }} MΩ ⚠</span>
                                         {% endif %}
@@ -142,10 +142,10 @@
                                 
                                 <!-- I_B -->
                                 <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I<sub>B</sub>:</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I Leak:</span>
                                     {% if device.i_b is not none %}
                                         {% if device.i_b < 0.5 %}
-                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_b) }} mA</span>
+                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">&lt;&lt; {{ "%.3f"|format(device.i_b) }} mA</span>
                                         {% else %}
                                             <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.3f"|format(device.i_b) }} mA ⚠</span>
                                         {% endif %}
@@ -237,7 +237,7 @@
             <span class="badge badge-active" style="margin-top: 0.5rem;">< 3,5 mA</span>
         </div>
         <div>
-            <strong>I<sub>B</sub> (Berührungsstrom):</strong><br>
+            <strong>I Leak (Ableitstrom):</strong><br>
             <span class="badge badge-active" style="margin-top: 0.5rem;">< 0,5 mA</span>
         </div>
     </div>

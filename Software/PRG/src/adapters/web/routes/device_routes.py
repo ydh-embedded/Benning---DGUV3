@@ -176,7 +176,13 @@ def create_device():
             r_pe=_clean_float_field(data.get('r_pe')),
             r_iso=_clean_float_field(data.get('r_iso')),
             i_pe=_clean_float_field(data.get('i_pe')),
-            i_b=_clean_float_field(data.get('i_b'))
+            i_b=_clean_float_field(data.get('i_b')),
+            # USB-Kabel Felder (NEU)
+            cable_type=data.get('cable_type'),
+            test_result=data.get('test_result'),
+            internal_resistance=_clean_float_field(data.get('internal_resistance')),
+            emarker_active=data.get('emarker_active') if data.get('emarker_active') is not None else None,
+            inspection_notes=data.get('inspection_notes')
         )
         created = container.create_device_usecase.execute(device)
         return jsonify({
@@ -191,7 +197,14 @@ def create_device():
                 'r_pe': created.r_pe,
                 'r_iso': created.r_iso,
                 'i_pe': created.i_pe,
-                'i_b': created.i_b
+                'i_b': created.i_b,
+                # USB-Kabel Felder in Response (NEU)
+                'cable_type': created.cable_type,
+                'test_result': created.test_result,
+                'internal_resistance': created.internal_resistance,
+                'emarker_active': created.emarker_active,
+                'inspection_notes': created.inspection_notes
+                
             },
             'message': 'Device created successfully'
         }), 201
@@ -226,8 +239,12 @@ def create_device():
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
-        print(f"ERROR in create_device: {str(e)}")
-        print(error_trace)
+        # Log to logger (goes to JSON logs)
+        logger.error(f"ERROR in create_device: {str(e)}")
+        logger.error(f"Traceback: {error_trace}")
+        # Also print to stderr
+        print(f"ERROR in create_device: {str(e)}", flush=True)
+        print(error_trace, flush=True)
         return jsonify({
             'success': False,
             'error': str(e),

@@ -1,4 +1,4 @@
-"""MySQL Device Repository - Hexagonal Architecture Pattern mit customer_device_id - KORRIGIERTE VERSION"""
+"""MySQL Device Repository - Hexagonal Architecture Pattern mit customer_device_id und USB-Kabel Feldern"""
 import time
 from typing import List, Optional
 from src.core.domain.device import Device
@@ -56,8 +56,11 @@ class MySQLDeviceRepository:
             
             query = """
                 INSERT INTO devices 
-                (customer, customer_device_id, name, type, location, manufacturer, serial_number, purchase_date, last_inspection, next_inspection, status, notes, r_pe, r_iso, i_pe, i_b)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (customer, customer_device_id, name, type, location, manufacturer, serial_number, 
+                 purchase_date, last_inspection, next_inspection, status, notes, 
+                 r_pe, r_iso, i_pe, i_b,
+                 cable_type, test_result, internal_resistance, emarker_active, inspection_notes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
             values = (
@@ -69,14 +72,20 @@ class MySQLDeviceRepository:
                 device.manufacturer,
                 device.serial_number,  # Jetzt NULL statt leerer String
                 device.purchase_date,  # Jetzt NULL statt leerer String
-                device.last_inspection,  # NEU: Prüfdatum
-                device.next_inspection,  # NEU: Nächste Prüfung
+                device.last_inspection,  # Prüfdatum
+                device.next_inspection,  # Nächste Prüfung
                 device.status or 'active',
                 device.notes,
                 device.r_pe,
                 device.r_iso,
                 device.i_pe,
-                device.i_b
+                device.i_b,
+                # USB-Kabel Felder (NEU)
+                device.cable_type,
+                device.test_result,
+                device.internal_resistance,
+                device.emarker_active,
+                device.inspection_notes
             )
             
             cursor.execute(query, values)
@@ -205,7 +214,9 @@ class MySQLDeviceRepository:
                 UPDATE devices 
                 SET customer = %s, name = %s, type = %s, location = %s, 
                     manufacturer = %s, serial_number = %s, purchase_date = %s, 
-                    status = %s, notes = %s
+                    status = %s, notes = %s,
+                    cable_type = %s, test_result = %s, internal_resistance = %s,
+                    emarker_active = %s, inspection_notes = %s
                 WHERE customer_device_id = %s
             """
             
@@ -219,6 +230,12 @@ class MySQLDeviceRepository:
                 device.purchase_date,
                 device.status or 'active',
                 device.notes,
+                # USB-Kabel Felder (NEU)
+                device.cable_type,
+                device.test_result,
+                device.internal_resistance,
+                device.emarker_active,
+                device.inspection_notes,
                 device.customer_device_id
             )
             
@@ -326,5 +343,11 @@ class MySQLDeviceRepository:
             r_pe=row.get('r_pe'),
             r_iso=row.get('r_iso'),
             i_pe=row.get('i_pe'),
-            i_b=row.get('i_b')
+            i_b=row.get('i_b'),
+            # USB-Kabel Felder (NEU)
+            cable_type=row.get('cable_type'),
+            test_result=row.get('test_result'),
+            internal_resistance=row.get('internal_resistance'),
+            emarker_active=row.get('emarker_active'),
+            inspection_notes=row.get('inspection_notes')
         )

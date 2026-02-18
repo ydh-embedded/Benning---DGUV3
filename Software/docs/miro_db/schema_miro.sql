@@ -1,13 +1,3 @@
--- ============================================================================
--- Benning Device Manager - Schema für miro_db (KORRIGIERT & FUNKTIONSFÄHIG)
--- ============================================================================
--- WICHTIG: customer und customer_device_id sind jetzt OPTIONAL (NULL erlaubt)
--- damit das Formular funktioniert, auch wenn diese Felder nicht ausgefüllt sind
--- ============================================================================
-
--- ============================================================================
--- ANCHOR: Devices Table (mit optionalen Kunde-Feldern)
--- ============================================================================
 CREATE TABLE IF NOT EXISTS devices (
     id INT PRIMARY KEY AUTO_INCREMENT,
     
@@ -44,9 +34,6 @@ CREATE TABLE IF NOT EXISTS devices (
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================================
--- ANCHOR: Inspections Table
--- ============================================================================
 CREATE TABLE IF NOT EXISTS inspections (
     id INT PRIMARY KEY AUTO_INCREMENT,
     device_id INT NOT NULL,
@@ -62,9 +49,6 @@ CREATE TABLE IF NOT EXISTS inspections (
     INDEX idx_result (result)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================================
--- ANCHOR: Users Table
--- ============================================================================
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255) UNIQUE NOT NULL,
@@ -78,9 +62,6 @@ CREATE TABLE IF NOT EXISTS users (
     INDEX idx_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================================
--- ANCHOR: Audit Log Table
--- ============================================================================
 CREATE TABLE IF NOT EXISTS audit_log (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT DEFAULT NULL,
@@ -93,7 +74,3 @@ CREATE TABLE IF NOT EXISTS audit_log (
     INDEX idx_entity (entity_type, entity_id),
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================================================
--- Schema erfolgreich erstellt!
--- ============================================================================

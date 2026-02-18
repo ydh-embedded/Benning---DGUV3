@@ -1,4 +1,4 @@
-"""Device Entity - Hexagonal Architecture mit customer_device_id und DGUV3-Prüfwerten"""
+"""Device Entity - Hexagonal Architecture mit customer_device_id, DGUV3-Prüfwerten und USB-Kabel Feldern"""
 from dataclasses import dataclass
 from typing import Optional
 from datetime import date
@@ -15,7 +15,7 @@ class Device:
         customer: Kundenname (z.B. "Parloa")
         customer_device_id: Formatierte Kunden-ID (z.B. "Parloa-00001")
         name: Gerätename
-        type: Gerätetyp (z.B. "Elektrowerkzeug")
+        type: Gerätetyp (z.B. "Elektrowerkzeug", "USB-Kabel")
         serial_number: Seriennummer (UNIQUE)
         manufacturer: Hersteller
         model: Modell
@@ -27,11 +27,18 @@ class Device:
         qr_code: QR-Code als Bytes (PNG/Base64)
         notes: Notizen
         
-        # NEU: DGUV3 Prüfwerte
+        # DGUV3 Prüfwerte
         r_pe: Schutzleiterwiderstand in Ohm (Grenzwert: < 0,3 Ω)
         r_iso: Isolationswiderstand in MegaOhm (Grenzwert: > 1,0 MΩ)
         i_pe: Schutzleiterstrom in mA (Grenzwert: < 3,5 mA)
         i_b: Berührungsstrom in mA (Grenzwert: < 0,5 mA)
+        
+        # USB-Kabel Inspektionsfelder (NEU)
+        cable_type: Kabeltyp (USB-C, Lightning, Micro-USB, etc.)
+        test_result: Testergebnis (bestanden, nicht_bestanden, verloren, nicht_vorhanden)
+        internal_resistance: Innenwiderstand in Ohm
+        emarker_active: eMarker Status (nur USB-C)
+        inspection_notes: Inspektionsnotizen
     """
     
     # ANCHOR: Required Fields
@@ -53,11 +60,18 @@ class Device:
     qr_code: Optional[bytes] = None
     notes: Optional[str] = None
     
-    # ANCHOR: DGUV3 Prüfwerte (NEU)
+    # ANCHOR: DGUV3 Prüfwerte
     r_pe: Optional[float] = None      # Schutzleiterwiderstand in Ohm
     r_iso: Optional[float] = None     # Isolationswiderstand in MegaOhm
     i_pe: Optional[float] = None      # Schutzleiterstrom in mA
     i_b: Optional[float] = None       # Berührungsstrom in mA
+    
+    # ANCHOR: USB-Kabel Inspektionsfelder (NEU)
+    cable_type: Optional[str] = None              # USB-C, Lightning, Micro-USB, etc.
+    test_result: Optional[str] = None             # bestanden, nicht_bestanden, verloren, nicht_vorhanden
+    internal_resistance: Optional[float] = None   # Innenwiderstand in Ohm
+    emarker_active: Optional[bool] = None         # eMarker Status (nur USB-C)
+    inspection_notes: Optional[str] = None        # Inspektionsnotizen
     
     def __post_init__(self):
         """Validate device after initialization"""
@@ -88,7 +102,7 @@ class Device:
         from datetime import datetime
         return datetime.now().date() >= self.next_inspection
     
-    # ANCHOR: DGUV3 Grenzwertprüfungen (NEU)
+    # ANCHOR: DGUV3 Grenzwertprüfungen
     def is_r_pe_within_limit(self) -> bool:
         """Prüft ob Schutzleiterwiderstand innerhalb Grenzwert (< 0,3 Ω)"""
         return self.r_pe is not None and self.r_pe < 0.3
@@ -114,6 +128,15 @@ class Device:
                 self.is_i_pe_within_limit() and 
                 self.is_i_b_within_limit())
     
+    # ANCHOR: USB-Kabel Prüfungen (NEU)
+    def is_usb_cable(self) -> bool:
+        """Prüft ob es sich um ein USB-Kabel handelt"""
+        return self.type == "USB-Kabel"
+    
+    def usb_test_passed(self) -> bool:
+        """Prüft ob USB-Kabel Test bestanden wurde"""
+        return self.test_result == "bestanden"
+    
     def to_dict(self) -> dict:
         """Convert device to dictionary"""
         return {
@@ -131,9 +154,15 @@ class Device:
             'next_inspection': str(self.next_inspection) if self.next_inspection else None,
             'status': self.status,
             'notes': self.notes,
-            # NEU: DGUV3 Prüfwerte
+            # DGUV3 Prüfwerte
             'r_pe': self.r_pe,
             'r_iso': self.r_iso,
             'i_pe': self.i_pe,
-            'i_b': self.i_b
+            'i_b': self.i_b,
+            # USB-Kabel Felder (NEU)
+            'cable_type': self.cable_type,
+            'test_result': self.test_result,
+            'internal_resistance': self.internal_resistance,
+            'emarker_active': self.emarker_active,
+            'inspection_notes': self.inspection_notes
         }

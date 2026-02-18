@@ -1,41 +1,35 @@
 -- ============================================================================
--- Benning Device Manager - Schema für miro_db (KORRIGIERT & FUNKTIONSFÄHIG)
--- ============================================================================
--- WICHTIG: customer und customer_device_id sind jetzt OPTIONAL (NULL erlaubt)
--- damit das Formular funktioniert, auch wenn diese Felder nicht ausgefüllt sind
+-- Benning Device Manager - Schema mit Kunde und QR-Code (KORRIGIERT)
 -- ============================================================================
 
+DROP DATABASE IF EXISTS benning_device_manager;
+CREATE DATABASE benning_device_manager 
+CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
+USE benning_device_manager;
+
 -- ============================================================================
--- ANCHOR: Devices Table (mit optionalen Kunde-Feldern)
+-- ANCHOR: Devices Table (mit Kunde und QR-Code)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS devices (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    
-    -- Kundenfelder (OPTIONAL - NULL erlaubt)
-    customer VARCHAR(255) DEFAULT NULL COMMENT 'Kundenname (optional)',
-    customer_device_id VARCHAR(255) UNIQUE DEFAULT NULL COMMENT 'Formatierte Kunden-ID: Kunde-00001 (optional)',
-    
-    -- Pflichtfelder
+    customer VARCHAR(255) NOT NULL COMMENT 'Kundenname',
+    customer_device_id VARCHAR(255) UNIQUE NOT NULL COMMENT 'Formatierte Kunden-ID: Kunde-00001',
     name VARCHAR(255) NOT NULL,
-    
-    -- Optionale Felder
-    type VARCHAR(100) DEFAULT NULL,
-    serial_number VARCHAR(255) DEFAULT NULL,
-    manufacturer VARCHAR(255) DEFAULT NULL,
-    model VARCHAR(255) DEFAULT NULL,
-    location VARCHAR(255) DEFAULT NULL,
-    purchase_date DATE DEFAULT NULL,
-    last_inspection DATE DEFAULT NULL,
-    next_inspection DATE DEFAULT NULL,
+    type VARCHAR(100),
+    serial_number VARCHAR(255),
+    manufacturer VARCHAR(255),
+    model VARCHAR(255),
+    location VARCHAR(255),
+    purchase_date DATE,
+    last_inspection DATE,
+    next_inspection DATE,
     status ENUM('active', 'inactive', 'maintenance', 'retired') DEFAULT 'active',
-    qr_code LONGBLOB DEFAULT NULL COMMENT 'QR-Code als PNG/Base64',
-    notes TEXT DEFAULT NULL,
-    
-    -- Timestamps
+    qr_code LONGBLOB COMMENT 'QR-Code als PNG/Base64',
+    notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    -- Indizes
     INDEX idx_customer (customer),
     INDEX idx_customer_device_id (customer_device_id),
     INDEX idx_name (name),
@@ -52,8 +46,8 @@ CREATE TABLE IF NOT EXISTS inspections (
     device_id INT NOT NULL,
     inspection_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     result ENUM('pass', 'fail', 'pending') DEFAULT 'pending',
-    notes TEXT DEFAULT NULL,
-    inspector VARCHAR(255) DEFAULT NULL,
+    notes TEXT,
+    inspector VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
@@ -83,11 +77,11 @@ CREATE TABLE IF NOT EXISTS users (
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS audit_log (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT DEFAULT NULL,
-    action VARCHAR(100) DEFAULT NULL,
-    entity_type VARCHAR(100) DEFAULT NULL,
-    entity_id INT DEFAULT NULL,
-    changes JSON DEFAULT NULL,
+    user_id INT,
+    action VARCHAR(100),
+    entity_type VARCHAR(100),
+    entity_id INT,
+    changes JSON,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_entity (entity_type, entity_id),
@@ -95,5 +89,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================================
--- Schema erfolgreich erstellt!
+-- Datenbankschema erfolgreich erstellt!
 -- ============================================================================
+SHOW TABLES;
+DESC devices;

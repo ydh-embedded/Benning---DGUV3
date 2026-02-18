@@ -142,7 +142,7 @@
                                 
                                 <!-- I_B -->
                                 <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I Leak:</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I<sub>Leak</sub>:</span>
                                     {% if device.i_b is not none %}
                                         {% if device.i_b < 0.5 %}
                                             <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">&lt;&lt; {{ "%.1f"|format(device.i_b) }} mA</span>
@@ -237,7 +237,7 @@
             <span class="badge badge-active" style="margin-top: 0.5rem;">< 3,5 mA</span>
         </div>
         <div>
-            <strong>I Leak (Ableitstrom):</strong><br>
+            <strong>I<sub>Leak</sub> (Ableitstrom):</strong><br>
             <span class="badge badge-active" style="margin-top: 0.5rem;">< 0,5 mA</span>
         </div>
     </div>

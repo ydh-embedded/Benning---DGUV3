@@ -140,14 +140,26 @@
                                     {% endif %}
                                 </div>
                                 
-                                <!-- I_B -->
+                                <!-- I_B / I_Leak -->
                                 <div style="display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 6px;">
                                     <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap;">I<sub>Leak</sub>:</span>
                                     {% if device.i_b is not none %}
-                                        {% if device.i_b < 0.5 %}
-                                            <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">&lt;&lt; {{ "%.1f"|format(device.i_b) }} mA</span>
+                                        {# Schutzklasse 1 (R_PE vorhanden): Grenzwert < 1.0 mA #}
+                                        {# Schutzklasse 2 (kein R_PE): Grenzwert < 0.25 mA #}
+                                        {% if device.r_pe is not none %}
+                                            {# SK1: R_PE vorhanden #}
+                                            {% if device.i_b < 1.0 %}
+                                                <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">&lt;&lt; {{ "%.1f"|format(device.i_b) }} mA</span>
+                                            {% else %}
+                                                <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.1f"|format(device.i_b) }} mA ⚠</span>
+                                            {% endif %}
                                         {% else %}
-                                            <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.1f"|format(device.i_b) }} mA ⚠</span>
+                                            {# SK2: Kein R_PE #}
+                                            {% if device.i_b < 0.25 %}
+                                                <span class="badge badge-active" style="font-size: 0.75rem; padding: 2px 6px;">&lt;&lt; {{ "%.1f"|format(device.i_b) }} mA</span>
+                                            {% else %}
+                                                <span class="badge badge-failed" style="font-size: 0.75rem; padding: 2px 6px;">{{ "%.1f"|format(device.i_b) }} mA ⚠</span>
+                                            {% endif %}
                                         {% endif %}
                                     {% else %}
                                         <span style="font-size: 0.75rem; color: var(--text-secondary);">-</span>

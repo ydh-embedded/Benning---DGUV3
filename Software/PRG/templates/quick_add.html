@@ -123,8 +123,11 @@
             
             <div class="form-group">
                 <label>Prüfdatum: *</label>
-                <input type="date" name="last_inspection" id="inspectionDate" required>
-                <small>Standardmäßig auf heute gesetzt</small>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" name="last_inspection_date" id="inspectionDate" required style="flex: 2;">
+                    <input type="time" name="last_inspection_time" id="inspectionTime" required style="flex: 1;">
+                </div>
+                <small>Datum und Uhrzeit der Prüfung</small>
             </div>
             
             <div class="form-group">
@@ -469,9 +472,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Setze Prüfdatum auf heute
-    const today = new Date().toISOString().split('T')[0];
+    // Setze Prüfdatum und Uhrzeit auf jetzt
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
     document.getElementById('inspectionDate').value = today;
+    document.getElementById('inspectionTime').value = currentTime;
     
     // Berechne auch nächste Prüfung initial
     const inspectionDate = new Date(today);

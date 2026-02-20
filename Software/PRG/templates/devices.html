@@ -41,7 +41,7 @@
                     <!-- <th style="width: 120px;">Seriennummer</th> -->
                     <!-- <th style="width: 100px;">Standort</th> -->
                     <!-- DGUV3 Prüfwerte -->
-                    <th style="width: 220px;">Messwerte</th>
+                    <th style="width: 280px;">Messwerte</th>
                     <th style="width: 220px;">QR-Code & Info</th>
                 </tr>
             </thead>
@@ -78,12 +78,21 @@
                             {% endif %}
                             {% if device.last_inspection %}
                                 <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                    <i class="fas fa-calendar-check" style="font-size: 0.7rem;"></i> {{ device.last_inspection.strftime('%d.%m.%Y') }}
+                                    <i class="fas fa-calendar-check" style="font-size: 0.7rem;"></i> {{ device.last_inspection.strftime('%d.%m.%Y') }} <span style="color: var(--text-muted);">{{ device.last_inspection.strftime('%H:%M') }}</span>
                                 </div>
                             {% endif %}
                         </div>
                     </td>
-                    <td><strong>{{ device.customer_device_id }}</strong></td>
+                    <td style="font-size: 0.85rem; line-height: 1.4;">
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <div style="font-weight: 600;">{{ device.customer_device_id }}</div>
+                            {% if device.serial_number %}
+                                <div style="color: var(--text-secondary); font-size: 0.75rem;">
+                                    <i class="fas fa-barcode" style="font-size: 0.7rem;"></i> {{ device.serial_number }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </td>
                     <td style="font-size: 0.85rem; line-height: 1.4;">
                         <div style="display: flex; flex-direction: column; gap: 2px;">
                             <div style="font-weight: 600;">{{ device.name }}</div>

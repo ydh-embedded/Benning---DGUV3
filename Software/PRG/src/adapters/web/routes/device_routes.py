@@ -15,6 +15,31 @@ logger = logging.getLogger(__name__)
 
 device_bp = Blueprint('devices', __name__, url_prefix='/api/devices')
 
+def _combine_date_time_fields(date_str, time_str):
+    """
+    Kombiniert Datum und Uhrzeit zu einem datetime-Objekt.
+    Sekunden werden automatisch auf die aktuelle Zeit gesetzt.
+    """
+    if not date_str:
+        return None
+    
+    try:
+        if time_str:
+            # Kombiniere Datum und Uhrzeit
+            datetime_str = f"{date_str} {time_str}"
+            dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
+            
+            # Füge aktuelle Sekunden hinzu
+            current_seconds = datetime.now().second
+            dt = dt.replace(second=current_seconds)
+            
+            return dt
+        else:
+            # Nur Datum (Uhrzeit wird auf 00:00:00 gesetzt)
+            return datetime.strptime(date_str, '%Y-%m-%d')
+    except (ValueError, TypeError):
+        return None
+
 
 def _clean_date_field(value):
     """Convert empty string to None for date fields with validation"""
@@ -168,7 +193,11 @@ def create_device():
             manufacturer=create_request.manufacturer,
             serial_number=create_request.serial_number,
             purchase_date=_clean_date_field(create_request.purchase_date),
-            last_inspection=_clean_date_field(data.get('last_inspection')),
+            last_inspection=_combine_date_time_fields(
+                data.get('last_inspection_date'),
+                data.get('last_inspection_time')
+            ),
+
             next_inspection=_clean_date_field(data.get('next_inspection')),
             status=create_request.status,
             notes=create_request.notes,

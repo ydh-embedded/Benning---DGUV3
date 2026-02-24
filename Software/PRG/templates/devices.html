@@ -78,7 +78,7 @@
                             {% endif %}
                             {% if device.last_inspection %}
                                 <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                    <i class="fas fa-calendar-check" style="font-size: 0.7rem;"></i> {{ device.last_inspection.strftime('%d.%m.%Y') }} <span style="color: var(--text-muted);">{{ device.last_inspection.strftime('%H:%M') }}</span>
+                                    <i class="fas fa-calendar-check" style="font-size: 0.7rem;"></i> {{ device.last_inspection.strftime('%d.%m.%Y') }} <span style="color: var(--text-muted);">{{ device.last_inspection.strftime('%H:%M:%S') }}</span>
                                 </div>
                             {% endif %}
                         </div>

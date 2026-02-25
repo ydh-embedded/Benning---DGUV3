@@ -97,6 +97,11 @@
                         <div style="display: flex; flex-direction: column; gap: 2px;">
                             <div style="font-weight: 600;">{{ device.name }}</div>
                             <div style="color: var(--text-secondary); font-size: 0.8rem;">{{ device.type }}</div>
+                            {% if device.location %}
+                                <div style="color: var(--text-muted); font-size: 0.75rem;">
+                                    <i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i> {{ device.location }}
+                                </div>
+                            {% endif %}
                         </div>
                     </td>
                     <!-- <td>{{ device.serial_number if device.serial_number else '-' }}</td> -->

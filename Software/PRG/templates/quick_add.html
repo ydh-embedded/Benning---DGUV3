@@ -11,7 +11,7 @@
         <div class="form-group">
             <label>Kunde: *</label>
             <input type="text" name="customer" id="customerInput" required autofocus 
-                   placeholder="z.B. Parloa, Siemens, etc.">
+                   placeholder="z.B. Miro, Parloa, Siemens, etc.">
             <small>Die Device ID wird als "Kunde-00001" formatiert</small>
         </div>
         
@@ -161,7 +161,7 @@
                 
                 <div class="form-group">
                     <label>Isolationswiderstand (R<sub>ISO</sub>) in MΩ:</label>
-                    <input type="number" name="r_iso_input" step="1" min="0" placeholder="z.B. 20" pattern="[0-9]*">
+                    <input type="number" name="r_iso_input" step="1" min="0" value="20" placeholder="z.B. 20" pattern="[0-9]*">
                     <small>Grenzwert: > 19,99 MΩ</small>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                 
                 <div class="form-group">
                     <label>Ableitstrom (I Leak) in 1/100 mA:</label>
-                    <input type="number" name="i_b_input" step="1" min="0" placeholder="z.B. 20" pattern="[0-9]*">
+                    <input type="number" name="i_b_input" step="1" min="0" value="20" placeholder="z.B. 20" pattern="[0-9]*">
                     <small>Eingabe: 20 = 0,20 mA | Grenzwert: < 0,5 mA</small>
                 </div>
             </div>

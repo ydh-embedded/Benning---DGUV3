@@ -87,22 +87,24 @@
                         <div style="display: flex; flex-direction: column; gap: 2px;">
                             <div style="font-weight: 600;">{{ device.customer_device_id }}</div>
                             {% if device.serial_number %}
-                                <div style="color: var(--text-secondary); font-size: 0.75rem;">
+                                <div style="color: var(--text-secondary); font-size: 0.65rem;">
                                     <i class="fas fa-barcode" style="font-size: 0.7rem;"></i> {{ device.serial_number }}
                                 </div>
                             {% endif %}
-                            {% set is_usb_cable = 'usb' in (device.name|lower) and 'kabel' in (device.name|lower) %}
+                            {% set is_usb_cable = 'usb-kabel' in (device.type|lower) or device.type|lower == 'usb kabel' or 'usb' in (device.type|lower) and 'kabel' in (device.type|lower) %}
+                            {% set is_verlaengerung = 'verlängerung' in (device.type|lower) or 'verlaengerung' in (device.type|lower) %}
+                            {% set is_elektrogeraet = 'elektrogerät' in (device.type|lower) or 'elektrogerat' in (device.type|lower) or 'elektrogerät' in (device.type|lower) %}
                             {% if is_usb_cable %}
                                 <div style="margin-top: 2px;">
-                                    <span style="display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; background: rgba(255, 180, 50, 0.15); border: 1px solid rgba(255, 180, 50, 0.4); border-radius: 4px; color: #ffb432; letter-spacing: 0.03em;">SK-III</span>
+                                    <span style="display: inline-block; font-size: 0.5rem; font-weight: 700; padding: 2px 6px; background: rgba(255, 180, 50, 0.15); border: 1px solid rgba(255, 180, 50, 0.4); border-radius: 4px; color: #ffb432; letter-spacing: 0.03em;">Schutzklasse: SK-III</span>
                                 </div>
-                            {% elif device.r_pe is not none %}
+                            {% elif (is_verlaengerung or is_elektrogeraet) and device.r_pe is not none %}
                                 <div style="margin-top: 2px;">
-                                    <span style="display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; background: rgba(100, 160, 255, 0.15); border: 1px solid rgba(100, 160, 255, 0.4); border-radius: 4px; color: #6ab0ff; letter-spacing: 0.03em;">SK-I</span>
+                                    <span style="display: inline-block; font-size: 0.5rem; font-weight: 700; padding: 2px 6px; background: rgba(100, 160, 255, 0.15); border: 1px solid rgba(100, 160, 255, 0.4); border-radius: 4px; color: #6ab0ff; letter-spacing: 0.03em;">Schutzklasse: SK-I</span>
                                 </div>
                             {% else %}
                                 <div style="margin-top: 2px;">
-                                    <span style="display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; background: rgba(180, 140, 255, 0.15); border: 1px solid rgba(180, 140, 255, 0.4); border-radius: 4px; color: #b48cff; letter-spacing: 0.03em;">SK-II</span>
+                                    <span style="display: inline-block; font-size: 0.5rem; font-weight: 700; padding: 2px 6px; background: rgba(180, 140, 255, 0.15); border: 1px solid rgba(180, 140, 255, 0.4); border-radius: 4px; color: #b48cff; letter-spacing: 0.03em;">Schutzklasse: SK-II</span>
                                 </div>
                             {% endif %}
                         </div>
